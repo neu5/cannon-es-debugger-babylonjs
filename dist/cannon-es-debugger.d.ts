@@ -1,10 +1,9 @@
 declare module "cannon-es-debugger" {
     import { Shape } from 'cannon-es';
-    import { Mesh } from 'three';
+    import { Color3, Mesh, Scene } from '@babylonjs/core';
     import type { Body, World } from 'cannon-es';
-    import type { Scene, Color } from 'three';
     export type DebugOptions = {
-        color?: string | number | Color;
+        color?: string | number | Color3;
         scale?: number;
         onInit?: (body: Body, mesh: Mesh, shape: Shape) => void;
         onUpdate?: (body: Body, mesh: Mesh, shape: Shape) => void;
