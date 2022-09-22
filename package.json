@@ -5,14 +5,13 @@
   "keywords": [
     "debugger",
     "cannon",
-    "three",
-    "react",
-    "react-three-fiber"
+    "babylonjs"
   ],
   "author": "Stefan Hedman <schteppe@gmail.com> (http://steffe.se)",
   "contributors": [
     "Cody Persinger <codypersinger@gmail.com> (https://github.com/codynova)",
-    "Marco Fugaro <marco.fugaro@gmail.com> (https://github.com/marcofugaro)"
+    "Marco Fugaro <marco.fugaro@gmail.com> (https://github.com/marcofugaro)",
+    "Jakub Kasprzyk https://github.com/neu5"
   ],
   "license": "MIT",
   "main": "./dist/cannon-es-debugger.cjs.js",
@@ -26,12 +25,12 @@
     "start": "serve",
     "prebuild": "rimraf dist",
     "build": "npm run typegen && rollup -c",
+    "forcebuild": "rollup -c",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
     "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts"
   },
   "peerDependencies": {
     "cannon-es": "0.x",
-    "three": "0.x",
     "typescript": ">=3.8"
   },
   "peerDependenciesMeta": {
@@ -43,15 +42,14 @@
     "@babel/core": "^7.16.5",
     "@babel/preset-env": "^7.16.5",
     "@babel/preset-typescript": "^7.16.5",
+    "@babylonjs/core": "^5.24.0",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-node-resolve": "^13.1.1",
-    "@types/three": "^0.135.0",
     "cannon-es": "^0.18.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.62.0",
     "serve": "^14.0.1",
-    "three": "^0.136.0",
     "typescript": "^4.5.4"
   }
 }
