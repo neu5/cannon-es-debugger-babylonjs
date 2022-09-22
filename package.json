@@ -10,7 +10,8 @@
   "author": "Stefan Hedman <schteppe@gmail.com> (http://steffe.se)",
   "contributors": [
     "Cody Persinger <codypersinger@gmail.com> (https://github.com/codynova)",
-    "Marco Fugaro <marco.fugaro@gmail.com> (https://github.com/marcofugaro)"
+    "Marco Fugaro <marco.fugaro@gmail.com> (https://github.com/marcofugaro)",
+    "Jakub Kasprzyk https://github.com/neu5"
   ],
   "license": "MIT",
   "main": "./dist/cannon-es-debugger.cjs.js",
@@ -24,6 +25,7 @@
     "start": "serve",
     "prebuild": "rimraf dist",
     "build": "npm run typegen && rollup -c",
+    "forcebuild": "rollup -c",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
     "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts"
   },

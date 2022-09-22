@@ -29,16 +29,16 @@ export default [
       format: 'esm',
     },
     plugins: [resolve({ extensions }), babel(babelOptions)],
-    external: ['cannon-es', 'three'],
+    external: ['cannon-es', 'babylonjs'],
   },
-  {
-    input: `./src/cannon-es-debugger`,
-    output: {
-      file: `dist/cannon-es-debugger.cjs.js`,
-      format: 'cjs',
-      exports: 'default',
-    },
-    plugins: [resolve({ extensions }), babel(babelOptions)],
-    external: ['cannon-es', 'three'],
-  },
+  // {
+  //   input: `./src/cannon-es-debugger`,
+  //   output: {
+  //     file: `dist/cannon-es-debugger.cjs.js`,
+  //     format: 'cjs',
+  //     exports: 'default',
+  //   },
+  //   plugins: [resolve({ extensions }), babel(babelOptions)],
+  //   external: ['cannon-es', 'babylonjs'],
+  // },
 ]

@@ -58,7 +58,7 @@
       const engine = new BABYLON.Engine(canvas, true) // Generate the BABYLON 3D engine
 
       // // three.js variables
-      let camera, light, scene, shadowGenerator
+      let camera, light, shadowGenerator
       let material
 
       // // cannon.js variables
@@ -72,7 +72,7 @@
       const meshes = []
       const bodies = []
 
-      initBabylonJS()
+      const scene = await initBabylonJS()
       initCannon()
       initCannonDebugger()
 
@@ -85,9 +85,9 @@
 
       // animate()
 
-      function initBabylonJS() {
+      async function initBabylonJS() {
         // // Scene
-        scene = new BABYLON.Scene(engine)
+        const scene = new BABYLON.Scene(engine)
         // Camera
         camera = new BABYLON.ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 2.5, 15, new BABYLON.Vector3(0, 0, 0))
         camera.attachControl(canvas, true)
@@ -135,6 +135,8 @@
         // spotLight.castShadow = true
         // scene.add(spotLight)
         window.addEventListener('resize', onWindowResize)
+
+        return scene
       }
 
       function onWindowResize() {
@@ -250,7 +252,8 @@
 
         // Graphics
         const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {})
-        shadowGenerator.addShadowCaster(sphere, true)
+        sphere.isVisible = false
+        // shadowGenerator.addShadowCaster(sphere, true)
         // const geometry = new THREE.SphereGeometry(size)
         // const mesh = new THREE.Mesh(geometry, material)
         // // position and quaternion of the mesh are set by updateMeshPositions...

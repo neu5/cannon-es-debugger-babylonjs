@@ -9,7 +9,7 @@ import {
   Quaternion as CannonQuaternion,
   Cylinder,
 } from 'cannon-es'
-import { Axis, Color3, Mesh, MeshBuilder, PhysicsImpostor, Scene, Vector3 } from '@babylonjs/core'
+import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial } from '@babylonjs/core'
 // import {
 //   MeshBasicMaterial,
 //   SphereGeometry,
@@ -23,7 +23,6 @@ import { Axis, Color3, Mesh, MeshBuilder, PhysicsImpostor, Scene, Vector3 } from
 //   Float32BufferAttribute,
 // } from 'three'
 import type { Body, World } from 'cannon-es'
-// import type { Scene, Color } from 'three'
 
 type ComplexShape = Shape & { geometryId?: number }
 export type DebugOptions = {
@@ -38,12 +37,16 @@ export default function CannonDebugger(
   world: World,
   { color = 0x00ff00, scale = 1, onInit, onUpdate }: DebugOptions = {}
 ) {
-  //   const _meshes: Mesh[] = []
+  const _meshes: Mesh[] = []
   //   const _material = new MeshBasicMaterial({ color: color ?? 0x00ff00, wireframe: true })
-  //   const _tempVec0 = new CannonVector3()
-  //   const _tempVec1 = new CannonVector3()
-  //   const _tempVec2 = new CannonVector3()
-  //   const _tempQuat0 = new CannonQuaternion()
+  // const _material = new StandardMaterial('myMaterial', scene)
+  // _material.ambientColor = new Color3(0, 1, 0)
+  // _material.wireframe = true
+  const _tempVec0 = new CannonVector3()
+  const _tempVec1 = new CannonVector3()
+  const _tempVec2 = new CannonVector3()
+  const _tempQuat0 = new CannonQuaternion()
+
   //   const _sphereGeometry = new SphereGeometry(1)
   //   const _boxGeometry = new BoxGeometry(1, 1, 1)
   //   const _planeGeometry = new PlaneGeometry(10, 10, 10, 10)
@@ -110,55 +113,69 @@ export default function CannonDebugger(
   //     geometry.computeVertexNormals()
   //     return geometry
   //   }
-  //   function createMesh(shape: Shape): Mesh {
-  //     let mesh = new Mesh()
-  //     const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
-  //     switch (shape.type) {
-  //       case SPHERE: {
-  //         mesh = new Mesh(_sphereGeometry, _material)
-  //         break
-  //       }
-  //       case BOX: {
-  //         mesh = new Mesh(_boxGeometry, _material)
-  //         break
-  //       }
-  //       case PLANE: {
-  //         mesh = new Mesh(_planeGeometry, _material)
-  //         break
-  //       }
-  //       case CYLINDER: {
-  //         const geometry = new CylinderGeometry(
-  //           (shape as Cylinder).radiusTop,
-  //           (shape as Cylinder).radiusBottom,
-  //           (shape as Cylinder).height,
-  //           (shape as Cylinder).numSegments
-  //         )
-  //         mesh = new Mesh(geometry, _material)
-  //         ;(shape as ComplexShape).geometryId = geometry.id
-  //         break
-  //       }
-  //       case CONVEXPOLYHEDRON: {
-  //         const geometry = createConvexPolyhedronGeometry(shape as ConvexPolyhedron)
-  //         mesh = new Mesh(geometry, _material)
-  //         ;(shape as ComplexShape).geometryId = geometry.id
-  //         break
-  //       }
-  //       case TRIMESH: {
-  //         const geometry = createTrimeshGeometry(shape as Trimesh)
-  //         mesh = new Mesh(geometry, _material)
-  //         ;(shape as ComplexShape).geometryId = geometry.id
-  //         break
-  //       }
-  //       case HEIGHTFIELD: {
-  //         const geometry = createHeightfieldGeometry(shape as Heightfield)
-  //         mesh = new Mesh(geometry, _material)
-  //         ;(shape as ComplexShape).geometryId = geometry.id
-  //         break
-  //       }
-  //     }
-  //     scene.add(mesh)
-  //     return mesh
-  //   }
+  function createMesh(shape: Shape): AbstractMesh {
+    let mesh
+    const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
+
+    // console.log('shape.type', shape.type)
+
+    switch (shape.type) {
+      case 1: {
+        mesh = MeshBuilder.CreateSphere('sphere', {}, scene)
+        break
+      }
+      case 2: {
+        mesh = MeshBuilder.CreatePlane('plane', {}, scene)
+        break
+      }
+      //   case BOX: {
+      //     mesh = new Mesh(_boxGeometry, _material)
+      //     break
+      //   }
+      //   case PLANE: {
+      //     mesh = new Mesh(_planeGeometry, _material)
+      //     break
+      //   }
+      //   case CYLINDER: {
+      //     const geometry = new CylinderGeometry(
+      //       (shape as Cylinder).radiusTop,
+      //       (shape as Cylinder).radiusBottom,
+      //       (shape as Cylinder).height,
+      //       (shape as Cylinder).numSegments
+      //     )
+      //     mesh = new Mesh(geometry, _material)
+      //     ;(shape as ComplexShape).geometryId = geometry.id
+      //     break
+      //   }
+      //   case CONVEXPOLYHEDRON: {
+      //     const geometry = createConvexPolyhedronGeometry(shape as ConvexPolyhedron)
+      //     mesh = new Mesh(geometry, _material)
+      //     ;(shape as ComplexShape).geometryId = geometry.id
+      //     break
+      //   }
+      //   case TRIMESH: {
+      //     const geometry = createTrimeshGeometry(shape as Trimesh)
+      //     mesh = new Mesh(geometry, _material)
+      //     ;(shape as ComplexShape).geometryId = geometry.id
+      //     break
+      //   }
+      //   case HEIGHTFIELD: {
+      //     const geometry = createHeightfieldGeometry(shape as Heightfield)
+      //     mesh = new Mesh(geometry, _material)
+      //     ;(shape as ComplexShape).geometryId = geometry.id
+      //     break
+      //   }
+    }
+
+    // console.log(' tu', { mesh })
+
+    const _material = new StandardMaterial('myMaterial', scene)
+    _material.ambientColor = new Color3(0, 1, 0)
+    _material.wireframe = true
+    mesh.material = _material
+    scene.addMesh(mesh)
+    return mesh
+  }
   //   function scaleMesh(mesh: Mesh, shape: Shape | ComplexShape): void {
   //     const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
   //     switch (shape.type) {
@@ -193,62 +210,63 @@ export default function CannonDebugger(
   //       }
   //     }
   //   }
-  //   function typeMatch(mesh: Mesh, shape: Shape | ComplexShape): boolean {
-  //     if (!mesh) return false
-  //     const { geometry } = mesh
-  //     return (
-  //       (geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE) ||
-  //       (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
-  //       (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
-  //       (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CYLINDER) ||
-  //       (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CONVEXPOLYHEDRON) ||
-  //       (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.TRIMESH) ||
-  //       (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.HEIGHTFIELD)
-  //     )
-  //   }
-  //   function updateMesh(index: number, shape: Shape | ComplexShape): boolean {
-  //     let mesh = _meshes[index]
-  //     let didCreateNewMesh = false
-  //     if (!typeMatch(mesh, shape)) {
-  //       if (mesh) scene.remove(mesh)
-  //       _meshes[index] = mesh = createMesh(shape)
-  //       didCreateNewMesh = true
-  //     }
-  //     scaleMesh(mesh, shape)
-  //     return didCreateNewMesh
-  //   }
-  //   function update(): void {
-  //     const meshes = _meshes
-  //     const shapeWorldPosition = _tempVec0
-  //     const shapeWorldQuaternion = _tempQuat0
-  //     let meshIndex = 0
-  //     for (const body of world.bodies) {
-  //       for (let i = 0; i !== body.shapes.length; i++) {
-  //         const shape = body.shapes[i]
-  //         const didCreateNewMesh = updateMesh(meshIndex, shape)
-  //         const mesh = meshes[meshIndex]
-  //         if (mesh) {
-  //           // Get world position
-  //           body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition)
-  //           body.position.vadd(shapeWorldPosition, shapeWorldPosition)
-  //           // Get world quaternion
-  //           body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion)
-  //           // Copy to meshes
-  //           mesh.position.copy(shapeWorldPosition as unknown as ThreeVector3)
-  //           mesh.quaternion.copy(shapeWorldQuaternion as unknown as ThreeQuaternion)
-  //           if (didCreateNewMesh && onInit instanceof Function) onInit(body, mesh, shape)
-  //           if (!didCreateNewMesh && onUpdate instanceof Function) onUpdate(body, mesh, shape)
-  //         }
-  //         meshIndex++
-  //       }
-  //     }
-  //     for (let i = meshIndex; i < meshes.length; i++) {
-  //       const mesh = meshes[i]
-  //       if (mesh) scene.remove(mesh)
-  //     }
-  //     meshes.length = meshIndex
-  //   }
+  function typeMatch(mesh: AbstractMesh, shape: Shape | ComplexShape): boolean {
+    if (!mesh) return false
+    // const { geometry } = mesh
 
-  const update = () => {}
+    return shape.type === Shape.types.SPHERE || shape.type === Shape.types.PLANE
+    // geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE ||
+    // (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
+    // (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
+    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CYLINDER) ||
+    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CONVEXPOLYHEDRON) ||
+    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.TRIMESH) ||
+    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.HEIGHTFIELD)
+  }
+  function updateMesh(index: number, shape: Shape | ComplexShape): boolean {
+    let mesh = _meshes[index]
+    let didCreateNewMesh = false
+    if (!typeMatch(mesh, shape)) {
+      if (mesh) scene.removeMesh(mesh)
+      _meshes[index] = mesh = createMesh(shape)
+      didCreateNewMesh = true
+    }
+    // scaleMesh(mesh, shape)
+    return didCreateNewMesh
+  }
+  function update(): void {
+    const meshes = _meshes
+    const shapeWorldPosition = _tempVec0
+    const shapeWorldQuaternion = _tempQuat0
+    let meshIndex = 0
+    for (const body of world.bodies) {
+      for (let i = 0; i !== body.shapes.length; i++) {
+        const shape = body.shapes[i]
+        const didCreateNewMesh = updateMesh(meshIndex, shape)
+        const mesh = meshes[meshIndex]
+        if (mesh) {
+          // Get world position
+          body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition)
+          body.position.vadd(shapeWorldPosition, shapeWorldPosition)
+          // Get world quaternion
+          body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion)
+          // Copy to meshes
+          mesh.position.set(shapeWorldPosition.x, shapeWorldPosition.y, shapeWorldPosition.z)
+          mesh.quaternion =
+            (shapeWorldQuaternion.x, shapeWorldQuaternion.y, shapeWorldQuaternion.z, shapeWorldQuaternion.w)
+
+          if (didCreateNewMesh && onInit instanceof Function) onInit(body, mesh, shape)
+          if (!didCreateNewMesh && onUpdate instanceof Function) onUpdate(body, mesh, shape)
+        }
+        meshIndex++
+      }
+    }
+    for (let i = meshIndex; i < meshes.length; i++) {
+      const mesh = meshes[i]
+      if (mesh) scene.removeMesh(mesh)
+    }
+    meshes.length = meshIndex
+  }
+
   return { update }
 }
