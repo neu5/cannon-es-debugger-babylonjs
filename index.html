@@ -204,8 +204,9 @@
         bodies.push(body)
 
         // Graphics
-        const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 10, height: 10 }, scene)
-        ground.receiveShadows = true
+        const plane = BABYLON.MeshBuilder.CreatePlane('plane', { width: 10, height: 10 }, scene)
+        plane.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0)
+        plane.receiveShadows = true
 
         // const geometry = new THREE.PlaneGeometry(100, 100, 1, 1)
         // const material = new THREE.MeshStandardMaterial({ color: '#060606' })
@@ -214,7 +215,7 @@
         // mesh.castShadow = true
         // mesh.receiveShadow = true
         // scene.add(mesh)
-        meshes.push(ground)
+        meshes.push(plane)
       }
 
       // function addBox() {
@@ -252,8 +253,7 @@
 
         // Graphics
         const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {})
-        sphere.isVisible = false
-        // shadowGenerator.addShadowCaster(sphere, true)
+        shadowGenerator.addShadowCaster(sphere, true)
         // const geometry = new THREE.SphereGeometry(size)
         // const mesh = new THREE.Mesh(geometry, material)
         // // position and quaternion of the mesh are set by updateMeshPositions...

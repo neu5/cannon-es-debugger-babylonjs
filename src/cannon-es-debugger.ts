@@ -9,7 +9,7 @@ import {
   Quaternion as CannonQuaternion,
   Cylinder,
 } from 'cannon-es'
-import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial } from '@babylonjs/core'
+import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from '@babylonjs/core'
 // import {
 //   MeshBasicMaterial,
 //   SphereGeometry,
@@ -38,10 +38,10 @@ export default function CannonDebugger(
   { color = 0x00ff00, scale = 1, onInit, onUpdate }: DebugOptions = {}
 ) {
   const _meshes: Mesh[] = []
-  //   const _material = new MeshBasicMaterial({ color: color ?? 0x00ff00, wireframe: true })
-  // const _material = new StandardMaterial('myMaterial', scene)
-  // _material.ambientColor = new Color3(0, 1, 0)
-  // _material.wireframe = true
+  // const _material = new MeshBasicMaterial({ color: color ?? 0x00ff00, wireframe: true })
+  const _material = new StandardMaterial('myMaterial', scene)
+  _material.diffuseColor = new Color3(0, 1, 0)
+  _material.wireframe = true
   const _tempVec0 = new CannonVector3()
   const _tempVec1 = new CannonVector3()
   const _tempVec2 = new CannonVector3()
@@ -121,11 +121,12 @@ export default function CannonDebugger(
 
     switch (shape.type) {
       case 1: {
-        mesh = MeshBuilder.CreateSphere('sphere', {}, scene)
+        mesh = MeshBuilder.CreateSphere('sphere', { segments: 16 }, scene)
         break
       }
       case 2: {
-        mesh = MeshBuilder.CreatePlane('plane', {}, scene)
+        mesh = MeshBuilder.CreatePlane('plane', { width: 10, height: 10 }, scene)
+        mesh.rotation = new Vector3(Math.PI / 2, 0, 0)
         break
       }
       //   case BOX: {
@@ -169,9 +170,6 @@ export default function CannonDebugger(
 
     // console.log(' tu', { mesh })
 
-    const _material = new StandardMaterial('myMaterial', scene)
-    _material.ambientColor = new Color3(0, 1, 0)
-    _material.wireframe = true
     mesh.material = _material
     scene.addMesh(mesh)
     return mesh
