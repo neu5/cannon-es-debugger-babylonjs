@@ -10,18 +10,6 @@ import {
   Cylinder,
 } from 'cannon-es'
 import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from '@babylonjs/core'
-// import {
-//   MeshBasicMaterial,
-//   SphereGeometry,
-//   BoxGeometry,
-//   PlaneGeometry,
-//   CylinderGeometry,
-//   Mesh,
-//   Vector3 as ThreeVector3,
-//   Quaternion as ThreeQuaternion,
-//   BufferGeometry,
-//   Float32BufferAttribute,
-// } from 'three'
 import type { Body, World } from 'cannon-es'
 
 type ComplexShape = Shape & { geometryId?: number }
@@ -47,9 +35,6 @@ export default function CannonDebugger(
   const _tempVec2 = new CannonVector3()
   const _tempQuat0 = new CannonQuaternion()
 
-  //   const _sphereGeometry = new SphereGeometry(1)
-  //   const _boxGeometry = new BoxGeometry(1, 1, 1)
-  //   const _planeGeometry = new PlaneGeometry(10, 10, 10, 10)
   //   // Move the planeGeometry forward a little bit to prevent z-fighting
   //   _planeGeometry.translate(0, 0, 0.0001)
   //   function createConvexPolyhedronGeometry(shape: ConvexPolyhedron): BufferGeometry {
@@ -117,26 +102,20 @@ export default function CannonDebugger(
     let mesh
     const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
 
-    // console.log('shape.type', shape.type)
-
     switch (shape.type) {
-      case 1: {
+      case SPHERE: {
         mesh = MeshBuilder.CreateSphere('sphere', { segments: 16 }, scene)
         break
       }
-      case 2: {
+      case PLANE: {
         mesh = MeshBuilder.CreatePlane('plane', { width: 10, height: 10 }, scene)
         mesh.rotation = new Vector3(Math.PI / 2, 0, 0)
         break
       }
-      //   case BOX: {
-      //     mesh = new Mesh(_boxGeometry, _material)
-      //     break
-      //   }
-      //   case PLANE: {
-      //     mesh = new Mesh(_planeGeometry, _material)
-      //     break
-      //   }
+      case BOX: {
+        mesh = MeshBuilder.CreateBox('box', {}, scene)
+        break
+      }
       //   case CYLINDER: {
       //     const geometry = new CylinderGeometry(
       //       (shape as Cylinder).radiusTop,
@@ -167,8 +146,6 @@ export default function CannonDebugger(
       //     break
       //   }
     }
-
-    // console.log(' tu', { mesh })
 
     mesh.material = _material
     scene.addMesh(mesh)
@@ -212,7 +189,7 @@ export default function CannonDebugger(
     if (!mesh) return false
     // const { geometry } = mesh
 
-    return shape.type === Shape.types.SPHERE || shape.type === Shape.types.PLANE
+    return shape.type === Shape.types.SPHERE || shape.type === Shape.types.PLANE || shape.type === Shape.types.BOX
     // geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE ||
     // (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
     // (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
