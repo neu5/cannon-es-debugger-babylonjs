@@ -80,8 +80,8 @@
       addSphere()
 
       setTimeout(() => {
-        addBox()
-      }, 1000)
+        addBox(2, 3, 0.5)
+      }, 500)
 
       // addCylinder()
       // addTrimesh()
@@ -101,7 +101,7 @@
         light.intensity = 0.4
 
         // Shadow generator
-        shadowGenerator = new BABYLON.ShadowGenerator(256, light)
+        shadowGenerator = new BABYLON.ShadowGenerator(1024, light)
 
         window.addEventListener('resize', onWindowResize)
 
@@ -156,7 +156,7 @@
         meshes.push(plane)
       }
 
-      function addBox() {
+      function addBox(x, y, z) {
         const size = 1
 
         // Physics
@@ -164,30 +164,30 @@
         const shape = new CANNON.Box(halfExtents)
         const body = new CANNON.Body({ mass })
         body.addShape(shape)
-        body.position.set(2, 3, 0.5)
+        body.position.set(x, y, z)
         world.addBody(body)
         bodies.push(body)
 
         // Graphics
-        const box = BABYLON.MeshBuilder.CreateBox('box', {})
+        const box = BABYLON.MeshBuilder.CreateBox('box', { size })
         shadowGenerator.addShadowCaster(box, true)
         box.receiveShadow = true
         meshes.push(box)
       }
 
       function addSphere() {
-        const size = 0.5
+        const radius = 0.5
 
         // Physics
         const body = new CANNON.Body({ mass })
-        const shape = new CANNON.Sphere(size)
+        const shape = new CANNON.Sphere(radius)
         body.addShape(shape)
         body.position.set(-0.5, 4, -1)
         world.addBody(body)
         bodies.push(body)
 
         // Graphics
-        const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', {})
+        const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { radius })
         shadowGenerator.addShadowCaster(sphere, true)
         sphere.receiveShadow = true
         meshes.push(sphere)
