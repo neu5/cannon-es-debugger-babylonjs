@@ -151,40 +151,46 @@ export default function CannonDebugger(
     scene.addMesh(mesh)
     return mesh
   }
-  //   function scaleMesh(mesh: Mesh, shape: Shape | ComplexShape): void {
-  //     const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
-  //     switch (shape.type) {
-  //       case SPHERE: {
-  //         const { radius } = shape as Sphere
-  //         mesh.scale.set(radius * scale, radius * scale, radius * scale)
-  //         break
-  //       }
-  //       case BOX: {
-  //         mesh.scale.copy((shape as Box).halfExtents as unknown as ThreeVector3)
-  //         mesh.scale.multiplyScalar(2 * scale)
-  //         break
-  //       }
-  //       case PLANE: {
-  //         break
-  //       }
-  //       case CYLINDER: {
-  //         mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-  //         break
-  //       }
-  //       case CONVEXPOLYHEDRON: {
-  //         mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-  //         break
-  //       }
-  //       case TRIMESH: {
-  //         mesh.scale.copy((shape as Trimesh).scale as unknown as ThreeVector3).multiplyScalar(scale)
-  //         break
-  //       }
-  //       case HEIGHTFIELD: {
-  //         mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-  //         break
-  //       }
-  //     }
-  //   }
+
+  function scaleMesh(mesh: Mesh, shape: Shape): void {
+    const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
+    switch (shape.type) {
+      case SPHERE: {
+        const { radius } = shape as Sphere
+        mesh.scalingDeterminant = radius * scale * 2
+        break
+      }
+      case BOX: {
+        const size = new Vector3(
+          shape.halfExtents.x * scale * 2,
+          shape.halfExtents.y * scale * 2,
+          shape.halfExtents.z * scale * 2
+        )
+        mesh.scaling = size
+        break
+      }
+      case PLANE: {
+        break
+      }
+      // case CYLINDER: {
+      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
+      //   break
+      // }
+      // case CONVEXPOLYHEDRON: {
+      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
+      //   break
+      // }
+      // case TRIMESH: {
+      //   mesh.scale.copy((shape as Trimesh).scale as unknown as Vector3).multiplyScalar(scale)
+      //   break
+      // }
+      // case HEIGHTFIELD: {
+      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
+      //   break
+      // }
+    }
+  }
+
   function typeMatch(mesh: AbstractMesh, shape: Shape | ComplexShape): boolean {
     if (!mesh) return false
     // const { geometry } = mesh
@@ -206,7 +212,7 @@ export default function CannonDebugger(
       _meshes[index] = mesh = createMesh(shape)
       didCreateNewMesh = true
     }
-    // scaleMesh(mesh, shape)
+    scaleMesh(mesh, shape)
     return didCreateNewMesh
   }
   function update(): void {
