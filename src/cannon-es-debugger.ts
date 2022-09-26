@@ -9,7 +9,7 @@ import {
   Quaternion as CannonQuaternion,
   Cylinder,
 } from 'cannon-es'
-import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3 } from '@babylonjs/core'
+import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, Quaternion } from '@babylonjs/core'
 import type { Body, World } from 'cannon-es'
 
 type ComplexShape = Shape & { geometryId?: number }
@@ -105,6 +105,7 @@ export default function CannonDebugger(
     switch (shape.type) {
       case SPHERE: {
         mesh = MeshBuilder.CreateSphere('sphere', { segments: 16 }, scene)
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
         break
       }
       case PLANE: {
@@ -114,6 +115,7 @@ export default function CannonDebugger(
       }
       case BOX: {
         mesh = MeshBuilder.CreateBox('box', {}, scene)
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
         break
       }
       //   case CYLINDER: {
@@ -233,8 +235,15 @@ export default function CannonDebugger(
           body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion)
           // Copy to meshes
           mesh.position.set(shapeWorldPosition.x, shapeWorldPosition.y, shapeWorldPosition.z)
-          mesh.quaternion =
-            (shapeWorldQuaternion.x, shapeWorldQuaternion.y, shapeWorldQuaternion.z, shapeWorldQuaternion.w)
+
+          if (mesh.rotationQuaternion) {
+            mesh.rotationQuaternion.set(
+              shapeWorldQuaternion.x,
+              shapeWorldQuaternion.y,
+              shapeWorldQuaternion.z,
+              shapeWorldQuaternion.w
+            )
+          }
 
           if (didCreateNewMesh && onInit instanceof Function) onInit(body, mesh, shape)
           if (!didCreateNewMesh && onUpdate instanceof Function) onUpdate(body, mesh, shape)
