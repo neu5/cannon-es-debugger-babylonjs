@@ -160,7 +160,7 @@
         })
       }
 
-      // addCylinder()
+      addCylinder({ position: { x: -4, y: 2, z: -3.5 } })
       // addTrimesh()
       // addHeightfield()
 
@@ -277,27 +277,36 @@
         return body
       }
 
-      // function addCylinder() {
-      //   const size = 1
-      //   const radialSegments = 15
+      function addCylinder({
+        height = 1,
+        position,
+        radius = 1,
+        radiusTop = 1,
+        radiusBottom = 1,
+        mass = 1,
+        numSegments = 8,
+      }) {
+        // Physics
+        const body = new CANNON.Body({ mass })
+        const shape = new CANNON.Cylinder(radiusTop, radiusBottom, height, numSegments)
+        body.addShape(shape)
+        body.position.set(position.x, position.y, position.z)
+        world.addBody(body)
+        bodies.push(body)
 
-      //   // Physics
-      //   const body = new CANNON.Body({ mass })
-      //   const shape = new CANNON.Cylinder(size * 0.5, size * 0.5, size, radialSegments)
-      //   body.addShape(shape)
-      //   body.position.set(0, 2, 1.5)
-      //   world.addBody(body)
-      //   bodies.push(body)
+        // Graphics
+        const cylinder = BABYLON.MeshBuilder.CreateCylinder(
+          'cylinder',
+          { diameterTop: radiusTop * 2, diameterBottom: radiusBottom * 2, height },
+          scene
+        )
+        cylinder.rotationQuaternion = cylinder.rotationQuaternion || new BABYLON.Quaternion()
+        shadowGenerator.addShadowCaster(cylinder, true)
+        cylinder.receiveShadows = true
+        meshes.push(cylinder)
 
-      //   // Graphics
-      //   const geometry = new THREE.CylinderGeometry(size * 0.5, size * 0.5, size, radialSegments)
-      //   const mesh = new THREE.Mesh(geometry, material)
-      //   // position and quaternion of the mesh are set by updateMeshPositions...
-      //   mesh.castShadow = true
-      //   mesh.receiveShadow = true
-      //   scene.add(mesh)
-      //   meshes.push(mesh)
-      // }
+        return body
+      }
 
       // function addTrimesh() {
       //   const radius = 1
@@ -401,7 +410,7 @@
         wheelBody1.angularDamping = 0.4
         vehicle.addWheel({
           body: wheelBody1,
-          position: new CANNON.Vec3(-1, 0, axisWidth / 6),
+          position: new CANNON.Vec3(-1, 0.3, axisWidth / 6),
           axis: new CANNON.Vec3(0, 0, 1),
           direction: down,
         })
@@ -415,7 +424,7 @@
         wheelBody2.angularDamping = 0.4
         vehicle.addWheel({
           body: wheelBody2,
-          position: new CANNON.Vec3(-1, 0, -axisWidth / 6),
+          position: new CANNON.Vec3(-1, 0.3, -axisWidth / 6),
           axis: new CANNON.Vec3(0, 0, 1),
           direction: down,
         })
@@ -429,7 +438,7 @@
         wheelBody3.angularDamping = 0.4
         vehicle.addWheel({
           body: wheelBody3,
-          position: new CANNON.Vec3(1, 0, axisWidth / 6),
+          position: new CANNON.Vec3(1, 0.3, axisWidth / 6),
           axis: new CANNON.Vec3(0, 0, 1),
           direction: down,
         })
@@ -443,7 +452,7 @@
         wheelBody4.angularDamping = 0.4
         vehicle.addWheel({
           body: wheelBody4,
-          position: new CANNON.Vec3(1, 0, -axisWidth / 6),
+          position: new CANNON.Vec3(1, 0.3, -axisWidth / 6),
           axis: new CANNON.Vec3(0, 0, 1),
           direction: down,
         })

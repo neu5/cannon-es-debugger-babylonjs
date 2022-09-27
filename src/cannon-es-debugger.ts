@@ -35,8 +35,6 @@ export default function CannonDebugger(
   const _tempVec2 = new CannonVector3()
   const _tempQuat0 = new CannonQuaternion()
 
-  //   // Move the planeGeometry forward a little bit to prevent z-fighting
-  //   _planeGeometry.translate(0, 0, 0.0001)
   //   function createConvexPolyhedronGeometry(shape: ConvexPolyhedron): BufferGeometry {
   //     const geometry = new BufferGeometry()
   //     // Add vertices
@@ -118,17 +116,16 @@ export default function CannonDebugger(
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
         break
       }
-      //   case CYLINDER: {
-      //     const geometry = new CylinderGeometry(
-      //       (shape as Cylinder).radiusTop,
-      //       (shape as Cylinder).radiusBottom,
-      //       (shape as Cylinder).height,
-      //       (shape as Cylinder).numSegments
-      //     )
-      //     mesh = new Mesh(geometry, _material)
-      //     ;(shape as ComplexShape).geometryId = geometry.id
-      //     break
-      //   }
+      case CYLINDER: {
+        const { height, radiusBottom, radiusTop } = shape
+        mesh = MeshBuilder.CreateCylinder(
+          'cylinder',
+          { diameterTop: radiusTop * 2, diameterBottom: radiusBottom * 2, height },
+          scene
+        )
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
+        break
+      }
       //   case CONVEXPOLYHEDRON: {
       //     const geometry = createConvexPolyhedronGeometry(shape as ConvexPolyhedron)
       //     mesh = new Mesh(geometry, _material)
@@ -174,10 +171,9 @@ export default function CannonDebugger(
       case PLANE: {
         break
       }
-      // case CYLINDER: {
-      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-      //   break
-      // }
+      case CYLINDER: {
+        break
+      }
       // case CONVEXPOLYHEDRON: {
       //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
       //   break
@@ -197,7 +193,12 @@ export default function CannonDebugger(
     if (!mesh) return false
     // const { geometry } = mesh
 
-    return shape.type === Shape.types.SPHERE || shape.type === Shape.types.PLANE || shape.type === Shape.types.BOX
+    return (
+      shape.type === Shape.types.SPHERE ||
+      shape.type === Shape.types.PLANE ||
+      shape.type === Shape.types.BOX ||
+      shape.type === Shape.types.CYLINDER
+    )
     // geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE ||
     // (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
     // (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
