@@ -160,18 +160,29 @@
       }
 
       function updateMeshPositions() {
+        for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
+          raycastVehicle.updateWheelTransform(i)
+          const { position, quaternion } = raycastVehicle.wheelInfos[i].worldTransform
+          const wheelBody = raycastVehicle.wheelBodies[i]
+          const wheelMesh = raycastVehicle.wheelMeshes[i]
+
+          wheelBody.position.set(position.x, position.y, position.z)
+          wheelBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+          wheelMesh.position.set(position.x, position.y, position.z)
+          wheelMesh.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+        }
+
         let meshIndex = 0
         for (const body of world.bodies) {
           for (let i = 0; i !== body.shapes.length; i++) {
             const shape = body.shapes[i]
             const mesh = meshes[meshIndex]
-            if (mesh) {
+            if (mesh && mesh !== 'wheel') {
               // Get world position
               body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition)
               body.position.vadd(shapeWorldPosition, shapeWorldPosition)
               // Get world quaternion
               body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion)
-              // Copy to meshes
               mesh.position.set(shapeWorldPosition.x, shapeWorldPosition.y, shapeWorldPosition.z)
 
               if (mesh.rotationQuaternion) {
@@ -186,28 +197,6 @@
             meshIndex++
           }
         }
-
-        // for (let i = 0; i < meshes.length; i++) {
-        //   const mesh = meshes[i]
-        //   const body = bodies[i]
-        //   const { position, quaternion, shapeOffsets } = body
-
-        //   // Get world position
-        //   if (body.quaternion) {
-
-        //     // body.quaternion.vmult(shapeOffsets[i], shapeWorldPosition)
-        //   }
-
-        //   mesh.position.set(position.x, position.y, position.z)
-
-        //   if (mesh.quaternion?.multiplyInPlace) {
-        //     mesh.quaternion.multiplyInPlace(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-        //   }
-
-        //   if (mesh.rotationQuaternion) {
-        //     mesh.rotationQuaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-        //   }
-        // }
       }
 
       function addPlane() {
@@ -306,6 +295,7 @@
             diameterBottom: radiusBottom * 2,
             height,
             faceUV: isWheel ? wheelUV : undefined,
+            tessellation: 6,
           },
           scene
         )
@@ -534,8 +524,8 @@
         wheelOptions.chassisConnectionPointLocal.set(1, 0, -1)
         vehicle.addWheel(wheelOptions)
 
-        let wheelBodies = []
-        let wheelMeshes = []
+        vehicle.wheelBodies = []
+        vehicle.wheelMeshes = []
 
         vehicle.wheelInfos.forEach((wheel) => {
           const { body, cylinder, shape } = addWheel({
@@ -547,28 +537,8 @@
           })
           body.type = CANNON.Body.KINEMATIC
           body.collisionFilterGroup = 0 // turn off collisions)
-          wheelBodies.push(body)
-          wheelMeshes.push(cylinder)
-        })
-
-        // Update the wheel bodies
-        world.addEventListener('postStep', () => {
-          for (let i = 0; i < vehicle.wheelInfos.length; i++) {
-            vehicle.updateWheelTransform(i)
-            const { position, quaternion } = vehicle.wheelInfos[i].worldTransform
-
-            const wheelBody = wheelBodies[i]
-            const wheelMesh = wheelMeshes[i]
-            wheelBody.position.set(position.x, position.y, position.z)
-
-            if (wheelBody.quaternion) {
-              wheelBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-            }
-
-            if (wheelMesh.rotationQuaternion) {
-              // wheelMesh.rotationQuaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-            }
-          }
+          vehicle.wheelBodies.push(body)
+          vehicle.wheelMeshes.push(cylinder)
         })
 
         const groundMaterial = new CANNON.Material('ground')
