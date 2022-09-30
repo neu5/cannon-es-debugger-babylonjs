@@ -77,6 +77,11 @@
       }
       const carWheelSize = 0.5
 
+      let vehicleSteering = {
+        left: false,
+        right: false,
+      }
+
       // // To be kept in sync
       const meshes = []
       const bodies = []
@@ -149,7 +154,7 @@
       function initCannonDebugger() {
         cannonDebugger = new CannonDebugger(scene, world, {
           onInit(body, mesh) {
-            // Toggle visibiliy on "d" press
+            // Toggle visibiliy on "c" press
             document.addEventListener('keydown', (event) => {
               if (event.key === 'c') {
                 mesh.isVisible = !mesh.isVisible
@@ -160,24 +165,12 @@
       }
 
       function updateMeshPositions() {
-        for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
-          raycastVehicle.updateWheelTransform(i)
-          const { position, quaternion } = raycastVehicle.wheelInfos[i].worldTransform
-          const wheelBody = raycastVehicle.wheelBodies[i]
-          const wheelMesh = raycastVehicle.wheelMeshes[i]
-
-          wheelBody.position.set(position.x, position.y, position.z)
-          wheelBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-          wheelMesh.position.set(position.x, position.y, position.z)
-          wheelMesh.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-        }
-
         let meshIndex = 0
         for (const body of world.bodies) {
           for (let i = 0; i !== body.shapes.length; i++) {
             const shape = body.shapes[i]
             const mesh = meshes[meshIndex]
-            if (mesh && mesh !== 'wheel') {
+            if (mesh) {
               // Get world position
               body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition)
               body.position.vadd(shapeWorldPosition, shapeWorldPosition)
@@ -186,12 +179,43 @@
               mesh.position.set(shapeWorldPosition.x, shapeWorldPosition.y, shapeWorldPosition.z)
 
               if (mesh.rotationQuaternion) {
-                mesh.rotationQuaternion.set(
-                  shapeWorldQuaternion.x,
-                  shapeWorldQuaternion.y,
-                  shapeWorldQuaternion.z,
-                  shapeWorldQuaternion.w
-                )
+                if (mesh.name === 'wheel') {
+                  for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
+                    raycastVehicle.updateWheelTransform(i)
+                    const { position, quaternion } = raycastVehicle.getWheelTransformWorld(i)
+                    const wheelBody = raycastVehicle.wheelBodies[i]
+                    const wheelMesh = raycastVehicle.wheelMeshes[i]
+
+                    const wheel = raycastVehicle.wheelInfos[i]
+
+                    const rotation = wheel.rotation
+
+                    wheelBody.position.set(position.x, position.y, position.z)
+                    wheelBody.quaternion.set(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+
+                    const maxSteerVal = Math.PI / 8
+                    let alpha = 0
+                    if (vehicleSteering.left) {
+                      alpha = -maxSteerVal
+                    }
+                    if (vehicleSteering.right) {
+                      alpha = maxSteerVal
+                    }
+
+                    const rotationQuaterion = BABYLON.Quaternion.RotationAlphaBetaGamma(alpha, Math.PI / 2, rotation)
+
+                    const quat = new BABYLON.Quaternion().multiply(rotationQuaterion)
+
+                    mesh.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w)
+                  }
+                } else {
+                  mesh.rotationQuaternion.set(
+                    shapeWorldQuaternion.x,
+                    shapeWorldQuaternion.y,
+                    shapeWorldQuaternion.z,
+                    shapeWorldQuaternion.w
+                  )
+                }
               }
             }
             meshIndex++
@@ -273,8 +297,6 @@
         const body = new CANNON.Body({ mass })
         const shape = new CANNON.Cylinder(radiusTop, radiusBottom, height, numSegments)
         const quaternion = isWheel ? new CANNON.Quaternion().setFromEuler(Math.PI / 2, 0, 0) : new CANNON.Quaternion()
-        // const quaternion = new CANNON.Quaternion().setFromEuler(Math.PI / 2, 0, 0)
-        // body.addShape(shape, new CANNON.Vec3(), quaternion)
         body.addShape(shape, new CANNON.Vec3(), quaternion)
         body.position.set(position.x, position.y, position.z)
         world.addBody(body)
@@ -510,6 +532,7 @@
           maxSuspensionTravel: 0.3,
           customSlidingRotationalSpeed: -30,
           useCustomSlidingRotationalSpeed: true,
+          isFrontWheel: true,
         }
 
         wheelOptions.chassisConnectionPointLocal.set(-1, 0, 1)
@@ -518,6 +541,7 @@
         wheelOptions.chassisConnectionPointLocal.set(-1, 0, -1)
         vehicle.addWheel(wheelOptions)
 
+        wheelOptions.isFrontWheel = false
         wheelOptions.chassisConnectionPointLocal.set(1, 0, 1)
         vehicle.addWheel(wheelOptions)
 
@@ -649,12 +673,14 @@
 
             case 'a':
             case 'ArrowLeft':
+              vehicleSteering.left = true
               vehicle.setSteeringValue(maxSteerVal, 0)
               vehicle.setSteeringValue(maxSteerVal, 1)
               break
 
             case 'd':
             case 'ArrowRight':
+              vehicleSteering.right = true
               vehicle.setSteeringValue(-maxSteerVal, 0)
               vehicle.setSteeringValue(-maxSteerVal, 1)
               break
@@ -685,12 +711,14 @@
 
             case 'a':
             case 'ArrowLeft':
+              vehicleSteering.left = false
               vehicle.setSteeringValue(0, 0)
               vehicle.setSteeringValue(0, 1)
               break
 
             case 'd':
             case 'ArrowRight':
+              vehicleSteering.right = false
               vehicle.setSteeringValue(0, 0)
               vehicle.setSteeringValue(0, 1)
               break
