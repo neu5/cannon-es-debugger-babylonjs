@@ -1,7 +1,7 @@
 {
   "name": "cannon-es-debugger",
   "version": "1.0.0",
-  "description": "Wireframe debugger for use with cannon-es https://github.com/pmndrs/cannon-es",
+  "description": "Wireframe debugger for use with cannon-es https://github.com/pmndrs/cannon-es with BabylonJS",
   "keywords": [
     "debugger",
     "cannon",
@@ -21,16 +21,8 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "start": "serve",
-    "prebuild": "rimraf dist",
-    "build": "npm run typegen && rollup -c",
-    "forcebuild": "rollup -c",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
-    "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts"
-  },
   "peerDependencies": {
-    "cannon-es": "0.x",
+    "cannon-es": "^0.20.0",
     "typescript": ">=3.8"
   },
   "peerDependenciesMeta": {
@@ -39,17 +31,22 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.16.5",
-    "@babel/preset-env": "^7.16.5",
-    "@babel/preset-typescript": "^7.16.5",
-    "@babylonjs/core": "^5.24.0",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-node-resolve": "^13.1.1",
-    "cannon-es": "^0.18.0",
+    "@parcel/packager-ts": "2.7.0",
+    "@parcel/transformer-typescript-types": "^2.7.0",
+    "cannon-es": "^0.20.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "rollup": "^2.62.0",
     "serve": "^14.0.1",
-    "typescript": "^4.5.4"
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^5.27.0",
+    "parcel": "^2.7.0"
+  },
+  "scripts": {
+    "start": "serve",
+    "prebuild": "rimraf dist",
+    "build": "NODE_ENV=production parcel build src/cannon-es-debugger.ts",
+    "watch": "parcel watch src/cannon-es-debugger.ts"
   }
 }
