@@ -1,7 +1,8 @@
 declare module "cannon-es-debugger" {
-    import { Shape } from 'cannon-es';
-    import { Color3, Mesh, Scene } from '@babylonjs/core';
-    import type { Body, World } from 'cannon-es';
+    import { Shape } from "cannon-es";
+    import type { Mesh, Scene } from "@babylonjs/core";
+    import { Color3 } from "@babylonjs/core";
+    import type { Body, World } from "cannon-es";
     export type DebugOptions = {
         color?: string | number | Color3;
         scale?: number;

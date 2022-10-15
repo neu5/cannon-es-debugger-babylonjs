@@ -1,39 +1,45 @@
 import {
-  Vec3 as CannonVector3,
-  Sphere,
   Box,
+  Quaternion as CannonQuaternion,
+  Vec3 as CannonVector3,
   ConvexPolyhedron,
-  Trimesh,
+  Cylinder,
   Heightfield,
   Shape,
-  Quaternion as CannonQuaternion,
-  Cylinder,
-} from 'cannon-es'
-import { AbstractMesh, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3, Quaternion } from '@babylonjs/core'
-import type { Body, World } from 'cannon-es'
+  Trimesh,
+} from "cannon-es";
+import type { AbstractMesh, Mesh, Scene } from "@babylonjs/core";
+import {
+  Color3,
+  MeshBuilder,
+  Quaternion,
+  StandardMaterial,
+  Vector3,
+} from "@babylonjs/core";
+import type { Sphere, World } from "cannon-es";
 
-type ComplexShape = Shape & { geometryId?: number }
+type ComplexShape = Shape & { geometryId?: number };
 export type DebugOptions = {
-  color?: string | number | Color3
-  scale?: number
-  onInit?: (body: Body, mesh: Mesh, shape: Shape) => void
-  onUpdate?: (body: Body, mesh: Mesh, shape: Shape) => void
-}
+  color?: string | number | Color3;
+  scale?: number;
+  onInit?: (body: Body, mesh: Mesh, shape: Shape) => void;
+  onUpdate?: (body: Body, mesh: Mesh, shape: Shape) => void;
+};
 
 export default function CannonDebugger(
   scene: Scene,
   world: World,
   { color = 0x00ff00, scale = 1, onInit, onUpdate }: DebugOptions = {}
 ) {
-  const _meshes: Mesh[] = []
+  const _meshes: Mesh[] = [];
   // const _material = new MeshBasicMaterial({ color: color ?? 0x00ff00, wireframe: true })
-  const _material = new StandardMaterial('myMaterial', scene)
-  _material.diffuseColor = new Color3(0, 1, 0)
-  _material.wireframe = true
-  const _tempVec0 = new CannonVector3()
-  const _tempVec1 = new CannonVector3()
-  const _tempVec2 = new CannonVector3()
-  const _tempQuat0 = new CannonQuaternion()
+  const _material = new StandardMaterial("myMaterial", scene);
+  _material.diffuseColor = new Color3(0, 1, 0);
+  _material.wireframe = true;
+  const _tempVec0 = new CannonVector3();
+  const _tempVec1 = new CannonVector3();
+  const _tempVec2 = new CannonVector3();
+  const _tempQuat0 = new CannonQuaternion();
 
   //   function createConvexPolyhedronGeometry(shape: ConvexPolyhedron): BufferGeometry {
   //     const geometry = new BufferGeometry()
@@ -97,34 +103,50 @@ export default function CannonDebugger(
   //     return geometry
   //   }
   function createMesh(shape: Shape): AbstractMesh {
-    let mesh
-    const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
+    let mesh;
+    const {
+      SPHERE,
+      BOX,
+      PLANE,
+      CYLINDER,
+      CONVEXPOLYHEDRON,
+      TRIMESH,
+      HEIGHTFIELD,
+    } = Shape.types;
 
     switch (shape.type) {
       case SPHERE: {
-        mesh = MeshBuilder.CreateSphere('sphere', { segments: 16 }, scene)
-        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
-        break
+        mesh = MeshBuilder.CreateSphere("sphere", { segments: 16 }, scene);
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+        break;
       }
       case PLANE: {
-        mesh = MeshBuilder.CreatePlane('plane', { width: 10, height: 10 }, scene)
-        mesh.rotation = new Vector3(Math.PI / 2, 0, 0)
-        break
+        mesh = MeshBuilder.CreatePlane(
+          "plane",
+          { width: 10, height: 10 },
+          scene
+        );
+        mesh.rotation = new Vector3(Math.PI / 2, 0, 0);
+        break;
       }
       case BOX: {
-        mesh = MeshBuilder.CreateBox('box', {}, scene)
-        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
-        break
+        mesh = MeshBuilder.CreateBox("box", {}, scene);
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+        break;
       }
       case CYLINDER: {
-        const { height, radiusBottom, radiusTop } = shape
+        const { height, radiusBottom, radiusTop } = shape;
         mesh = MeshBuilder.CreateCylinder(
-          'cylinder',
-          { diameterTop: radiusTop * 2, diameterBottom: radiusBottom * 2, height },
+          "cylinder",
+          {
+            diameterTop: radiusTop * 2,
+            diameterBottom: radiusBottom * 2,
+            height,
+          },
           scene
-        )
-        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion()
-        break
+        );
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+        break;
       }
       //   case CONVEXPOLYHEDRON: {
       //     const geometry = createConvexPolyhedronGeometry(shape as ConvexPolyhedron)
@@ -146,33 +168,41 @@ export default function CannonDebugger(
       //   }
     }
 
-    mesh.material = _material
-    scene.addMesh(mesh)
-    return mesh
+    mesh.material = _material;
+    scene.addMesh(mesh);
+    return mesh;
   }
 
   function scaleMesh(mesh: Mesh, shape: Shape): void {
-    const { SPHERE, BOX, PLANE, CYLINDER, CONVEXPOLYHEDRON, TRIMESH, HEIGHTFIELD } = Shape.types
+    const {
+      SPHERE,
+      BOX,
+      PLANE,
+      CYLINDER,
+      CONVEXPOLYHEDRON,
+      TRIMESH,
+      HEIGHTFIELD,
+    } = Shape.types;
     switch (shape.type) {
       case SPHERE: {
-        const { radius } = shape as Sphere
-        mesh.scalingDeterminant = radius * scale * 2
-        break
+        const { radius } = shape as Sphere;
+        mesh.scalingDeterminant = radius * scale * 2;
+        break;
       }
       case BOX: {
         const size = new Vector3(
           shape.halfExtents.x * scale * 2,
           shape.halfExtents.y * scale * 2,
           shape.halfExtents.z * scale * 2
-        )
-        mesh.scaling = size
-        break
+        );
+        mesh.scaling = size;
+        break;
       }
       case PLANE: {
-        break
+        break;
       }
       case CYLINDER: {
-        break
+        break;
       }
       // case CONVEXPOLYHEDRON: {
       //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
@@ -190,7 +220,7 @@ export default function CannonDebugger(
   }
 
   function typeMatch(mesh: AbstractMesh, shape: Shape | ComplexShape): boolean {
-    if (!mesh) return false
+    if (!mesh) return false;
     // const { geometry } = mesh
 
     return (
@@ -198,7 +228,7 @@ export default function CannonDebugger(
       shape.type === Shape.types.PLANE ||
       shape.type === Shape.types.BOX ||
       shape.type === Shape.types.CYLINDER
-    )
+    );
     // geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE ||
     // (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
     // (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
@@ -208,34 +238,38 @@ export default function CannonDebugger(
     // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.HEIGHTFIELD)
   }
   function updateMesh(index: number, shape: Shape | ComplexShape): boolean {
-    let mesh = _meshes[index]
-    let didCreateNewMesh = false
+    let mesh = _meshes[index];
+    let didCreateNewMesh = false;
     if (!typeMatch(mesh, shape)) {
-      if (mesh) scene.removeMesh(mesh)
-      _meshes[index] = mesh = createMesh(shape)
-      didCreateNewMesh = true
+      if (mesh) scene.removeMesh(mesh);
+      _meshes[index] = mesh = createMesh(shape);
+      didCreateNewMesh = true;
     }
-    scaleMesh(mesh, shape)
-    return didCreateNewMesh
+    scaleMesh(mesh, shape);
+    return didCreateNewMesh;
   }
   function update(): void {
-    const meshes = _meshes
-    const shapeWorldPosition = _tempVec0
-    const shapeWorldQuaternion = _tempQuat0
-    let meshIndex = 0
+    const meshes = _meshes;
+    const shapeWorldPosition = _tempVec0;
+    const shapeWorldQuaternion = _tempQuat0;
+    let meshIndex = 0;
     for (const body of world.bodies) {
       for (let i = 0; i !== body.shapes.length; i++) {
-        const shape = body.shapes[i]
-        const didCreateNewMesh = updateMesh(meshIndex, shape)
-        const mesh = meshes[meshIndex]
+        const shape = body.shapes[i];
+        const didCreateNewMesh = updateMesh(meshIndex, shape);
+        const mesh = meshes[meshIndex];
         if (mesh) {
           // Get world position
-          body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition)
-          body.position.vadd(shapeWorldPosition, shapeWorldPosition)
+          body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition);
+          body.position.vadd(shapeWorldPosition, shapeWorldPosition);
           // Get world quaternion
-          body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion)
+          body.quaternion.mult(body.shapeOrientations[i], shapeWorldQuaternion);
           // Copy to meshes
-          mesh.position.set(shapeWorldPosition.x, shapeWorldPosition.y, shapeWorldPosition.z)
+          mesh.position.set(
+            shapeWorldPosition.x,
+            shapeWorldPosition.y,
+            shapeWorldPosition.z
+          );
 
           if (mesh.rotationQuaternion) {
             mesh.rotationQuaternion.set(
@@ -243,21 +277,23 @@ export default function CannonDebugger(
               shapeWorldQuaternion.y,
               shapeWorldQuaternion.z,
               shapeWorldQuaternion.w
-            )
+            );
           }
 
-          if (didCreateNewMesh && onInit instanceof Function) onInit(body, mesh, shape)
-          if (!didCreateNewMesh && onUpdate instanceof Function) onUpdate(body, mesh, shape)
+          if (didCreateNewMesh && onInit instanceof Function)
+            onInit(body, mesh, shape);
+          if (!didCreateNewMesh && onUpdate instanceof Function)
+            onUpdate(body, mesh, shape);
         }
-        meshIndex++
+        meshIndex++;
       }
     }
     for (let i = meshIndex; i < meshes.length; i++) {
-      const mesh = meshes[i]
-      if (mesh) scene.removeMesh(mesh)
+      const mesh = meshes[i];
+      if (mesh) scene.removeMesh(mesh);
     }
-    meshes.length = meshIndex
+    meshes.length = meshIndex;
   }
 
-  return { update }
+  return { update };
 }

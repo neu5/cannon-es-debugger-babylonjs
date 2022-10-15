@@ -1,0 +1,40 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "requireConfigFile": false,
+    "project": ["./tsconfig.json"]
+  },
+  "plugins": ["import", "@typescript-eslint"],
+  "extends": ["airbnb-typescript"],
+  "rules": {
+    "import/no-unresolved": 2,
+    "import/no-commonjs": 2,
+    "no-console": 0,
+    "import/prefer-default-export": 0,
+    "import/no-default-export": 1,
+    "import/extensions": [
+      2,
+      "ignorePackages",
+      {
+        "ts": "never"
+      }
+    ],
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "no-param-reassign": ["error", { "props": false }],
+    "sort-imports": ["error", { "ignoreDeclarationSort": true }],
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/quotes": "off",
+    "@typescript-eslint/comma-dangle": "off",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      { "prefer": "type-imports", "disallowTypeAnnotations": true }
+    ],
+    "react/jsx-filename-extension": "off"
+  }
+}
