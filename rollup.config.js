@@ -35,10 +35,10 @@ export default [
   //   input: `./src/cannon-es-debugger`,
   //   output: {
   //     file: `dist/cannon-es-debugger.cjs.js`,
-  //     format: 'cjs',
-  //     exports: 'default',
+  //     format: "cjs",
+  //     exports: "default",
   //   },
   //   plugins: [resolve({ extensions }), babel(babelOptions)],
-  //   external: ['cannon-es', 'babylonjs'],
+  //   external: ["cannon-es", "babylonjs"],
   // },
 ];

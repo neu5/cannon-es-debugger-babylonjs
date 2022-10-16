@@ -1,12 +1,11 @@
 import {
-  Box,
   Quaternion as CannonQuaternion,
   Vec3 as CannonVector3,
-  ConvexPolyhedron,
-  Cylinder,
-  Heightfield,
+  // ConvexPolyhedron,
+  // Cylinder,
+  // Heightfield,
   Shape,
-  Trimesh,
+  // Trimesh,
 } from "cannon-es";
 import type { AbstractMesh, Mesh, Scene } from "@babylonjs/core";
 import {
@@ -16,25 +15,29 @@ import {
   StandardMaterial,
   Vector3,
 } from "@babylonjs/core";
-import type { Sphere, World } from "cannon-es";
+import type { Body as CannonBody, Sphere, World } from "cannon-es";
 
 type ComplexShape = Shape & { geometryId?: number };
 export type DebugOptions = {
-  color?: string | number | Color3;
+  color?: { r: number; g: number; b: number };
   scale?: number;
-  onInit?: (body: Body, mesh: Mesh, shape: Shape) => void;
-  onUpdate?: (body: Body, mesh: Mesh, shape: Shape) => void;
+  onInit?: (body: CannonBody, mesh: Mesh, shape: Shape) => void;
+  onUpdate?: (body: CannonBody, mesh: Mesh, shape: Shape) => void;
 };
 
 export default function CannonDebugger(
   scene: Scene,
   world: World,
-  { color = 0x00ff00, scale = 1, onInit, onUpdate }: DebugOptions = {}
+  {
+    color = { r: 0, g: 1, b: 0 },
+    scale = 1,
+    onInit,
+    onUpdate,
+  }: DebugOptions = {}
 ) {
-  const _meshes: Mesh[] = [];
-  // const _material = new MeshBasicMaterial({ color: color ?? 0x00ff00, wireframe: true })
+  const meshes: Mesh[] = [];
   const _material = new StandardMaterial("myMaterial", scene);
-  _material.diffuseColor = new Color3(0, 1, 0);
+  _material.diffuseColor = new Color3(color.r, color.g, color.b);
   _material.wireframe = true;
   const _tempVec0 = new CannonVector3();
   const _tempVec1 = new CannonVector3();
@@ -238,18 +241,18 @@ export default function CannonDebugger(
     // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.HEIGHTFIELD)
   }
   function updateMesh(index: number, shape: Shape | ComplexShape): boolean {
-    let mesh = _meshes[index];
+    let mesh = meshes[index];
     let didCreateNewMesh = false;
     if (!typeMatch(mesh, shape)) {
       if (mesh) scene.removeMesh(mesh);
-      _meshes[index] = mesh = createMesh(shape);
+      meshes[index] = mesh = createMesh(shape);
       didCreateNewMesh = true;
     }
     scaleMesh(mesh, shape);
     return didCreateNewMesh;
   }
   function update(): void {
-    const meshes = _meshes;
+    const meshesCopy = meshes;
     const shapeWorldPosition = _tempVec0;
     const shapeWorldQuaternion = _tempQuat0;
     let meshIndex = 0;
@@ -257,7 +260,7 @@ export default function CannonDebugger(
       for (let i = 0; i !== body.shapes.length; i++) {
         const shape = body.shapes[i];
         const didCreateNewMesh = updateMesh(meshIndex, shape);
-        const mesh = meshes[meshIndex];
+        const mesh = meshesCopy[meshIndex];
         if (mesh) {
           // Get world position
           body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition);
