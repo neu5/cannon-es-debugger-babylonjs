@@ -1,10 +1,12 @@
 {
-  "name": "cannon-es-debugger",
+  "name": "cannon-es-debugger-babylonjs",
   "version": "1.0.0",
-  "description": "Wireframe debugger for use with cannon-es https://github.com/pmndrs/cannon-es",
+  "description": "This is a debugger for use with cannon-es and BabylonJS https://github.com/pmndrs/cannon-es",
   "keywords": [
     "debugger",
-    "cannon",
+    "physics",
+    "cannonjs",
+    "cannon-es",
     "babylonjs"
   ],
   "author": "Stefan Hedman <schteppe@gmail.com> (http://steffe.se)",
