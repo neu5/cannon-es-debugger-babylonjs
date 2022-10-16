@@ -22,6 +22,7 @@
     "dist"
   ],
   "peerDependencies": {
+    "@babylonjs/core": "^5.27.0",
     "cannon-es": "^0.20.0",
     "typescript": "4.7.4"
   },
@@ -34,19 +35,20 @@
     "@parcel/packager-ts": "2.7.0",
     "@parcel/transformer-typescript-types": "^2.7.0",
     "cannon-es": "^0.20.0",
+    "install-peers-cli": "^2.2.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "serve": "^14.0.1",
     "typescript": "4.7.4"
   },
   "dependencies": {
-    "@babylonjs/core": "^5.27.0",
     "parcel": "^2.7.0"
   },
   "scripts": {
-    "start": "serve",
+    "prepare": "install-peers",
     "prebuild": "rimraf dist",
     "build": "NODE_ENV=production parcel build src/cannon-es-debugger.ts",
-    "watch": "parcel watch src/cannon-es-debugger.ts"
+    "watch": "parcel watch src/cannon-es-debugger.ts",
+    "start": "serve"
   }
 }
