@@ -25,22 +25,17 @@
   ],
   "peerDependencies": {
     "@babylonjs/core": "^5.24.0",
-    "cannon-es": "0.x",
-    "typescript": ">=3.8"
+    "cannon-es": "^0.18.0"
   },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    }
-  },
+  "type": "module",
   "devDependencies": {
     "@babel/core": "^7.16.5",
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.16.5",
     "@babel/preset-typescript": "^7.16.5",
     "@babylonjs/core": "^5.24.0",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-node-resolve": "^13.1.1",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.0",
     "cannon-es": "^0.18.0",
@@ -52,17 +47,18 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "rollup": "^2.62.0",
+    "rollup": "^3.22.2",
     "serve": "^14.0.1",
     "typescript": "^4.5.4"
   },
   "scripts": {
-    "start": "serve",
     "prebuild": "rimraf dist",
     "build": "npm run typegen && rollup -c",
     "forcebuild": "rollup -c",
+    "dev": "rollup -w -c",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
     "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts",
+    "start": "serve",
     "lint": "eslint 'src/*.ts'"
   }
 }
