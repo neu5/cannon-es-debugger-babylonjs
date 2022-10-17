@@ -24,6 +24,7 @@
     "dist"
   ],
   "peerDependencies": {
+    "@babylonjs/core": "^5.24.0",
     "cannon-es": "0.x",
     "typescript": ">=3.8"
   },
