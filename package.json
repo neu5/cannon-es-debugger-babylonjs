@@ -56,6 +56,7 @@
     "build": "npm run clear && npm run typegen && rollup -c rollup.config.prod.js",
     "build:dev": "npm run clear && rollup -w -c rollup.config.dev.js",
     "build:force": "rollup -c rollup.config.prod.js",
+    "build:testprod": "rollup -c rollup.config.test.prod.js",
     "dev": "rollup -w -c rollup.config.dev.js",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
     "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts",
