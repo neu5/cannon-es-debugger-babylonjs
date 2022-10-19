@@ -29,7 +29,7 @@ export default [
       format: "esm",
     },
     plugins: [resolve({ extensions }), babel(babelOptions)],
-    external: ["cannon-es", "@babylonjs/core"],
+    external: ["cannon-es"],
   },
   {
     input: `./src/cannon-es-debugger`,
