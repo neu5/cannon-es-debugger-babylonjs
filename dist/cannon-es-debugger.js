@@ -131,13 +131,15 @@ function CannonDebugger(scene, world, _temp) {
         {
           const {
             height,
+            numSegments,
             radiusBottom,
             radiusTop
           } = shape;
           mesh = MeshBuilder.CreateCylinder("cylinder", {
             diameterTop: radiusTop * 2,
             diameterBottom: radiusBottom * 2,
-            height
+            height,
+            tessellation: numSegments
           }, scene);
           mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion$1();
           break;

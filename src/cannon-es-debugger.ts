@@ -2,7 +2,6 @@ import {
   Quaternion as CannonQuaternion,
   Vec3 as CannonVector3,
   // ConvexPolyhedron,
-  // Cylinder,
   // Heightfield,
   Shape,
   // Trimesh,
@@ -138,13 +137,15 @@ export default function CannonDebugger(
         break;
       }
       case CYLINDER: {
-        const { height, radiusBottom, radiusTop } = shape;
+        const { height, numSegments, radiusBottom, radiusTop } = shape;
+
         mesh = MeshBuilder.CreateCylinder(
           "cylinder",
           {
             diameterTop: radiusTop * 2,
             diameterBottom: radiusBottom * 2,
             height,
+            tessellation: numSegments,
           },
           scene
         );
