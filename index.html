@@ -333,7 +333,7 @@
         radiusBottom = 1,
         mass = 1,
         material,
-        numSegments = 8,
+        numSegments = 12,
       }) {
         // Physics
         const body = new CANNON.Body({ mass });
@@ -346,8 +346,6 @@
         const quaternion = isWheel
           ? new CANNON.Quaternion().setFromEuler(Math.PI / 2, 0, 0)
           : new CANNON.Quaternion();
-        // const quaternion = new CANNON.Quaternion().setFromEuler(Math.PI / 2, 0, 0)
-        // body.addShape(shape, new CANNON.Vec3(), quaternion)
         body.addShape(shape, new CANNON.Vec3(), quaternion);
         body.position.set(position.x, position.y, position.z);
         world.addBody(body);
@@ -368,7 +366,7 @@
             diameterBottom: radiusBottom * 2,
             height,
             faceUV: isWheel ? wheelUV : undefined,
-            tessellation: 6,
+            tessellation: numSegments,
           },
           scene
         );
