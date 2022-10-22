@@ -36,8 +36,8 @@ jobs:
           cache: "yarn"
       - name: Install Dependencies
         run: yarn --immutable
-      - name: Build artifacts
-        run: yarn build:dev
+      - name: Build artifacts for demo
+        run: yarn build:demo
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
