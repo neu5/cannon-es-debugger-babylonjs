@@ -27,6 +27,7 @@
     ],
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "no-param-reassign": ["error", { "props": false }],
+    "react/jsx-filename-extension": "off",
     "sort-imports": ["error", { "ignoreDeclarationSort": true }],
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/quotes": "off",
