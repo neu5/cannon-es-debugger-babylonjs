@@ -60,81 +60,13 @@
       import * as CANNON from "cannon-es";
       import CannonDebugger from "cannon-es-debugger";
 
-      window.CANNON = CANNON;
-
-      const shapeWorldPosition = new CANNON.Vec3();
-      const shapeWorldQuaternion = new CANNON.Quaternion();
-
-      const canvas = document.getElementById("renderCanvas"); // Get the canvas element
-      const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
-
-      let camera, light, shadowGenerator;
-      let material;
-
-      // // cannon.js variables
-      let world;
-      const timeStep = 1 / 60;
-      let lastCallTime;
-      let cannonDebugger;
-
-      const carChassisSize = {
-        width: 4,
-        height: 0.5,
-        depth: 2,
-      };
-      const carWheelSize = 0.5;
-
-      // // To be kept in sync
-      const meshes = [];
-      const bodies = [];
-
-      const scene = await initBabylonJS();
-
-      initCannon();
-      initCannonDebugger();
-
-      addPlane();
-      addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
-
-      let rigidVehicle, raycastVehicle;
-
-      rigidVehicle = addRigidVehicle({
-        position: {
-          x: -10,
-          y: 6,
-          z: 0,
-        },
-      });
-
-      // raycastVehicle = addRaycastVehicle({ position: { x: 10, y: 6, z: 0 } });
-
-      setTimeout(() => {
-        addBox({
-          width: 1,
-          height: 1,
-          depth: 1,
-          position: { x: 2, y: 3, z: 0.5 },
-          mass: 1,
-        });
-      }, 500);
-
-      if (rigidVehicle) {
-        addRigidListeners(rigidVehicle);
-      }
-
-      if (raycastVehicle) {
-        addRaycastListeners(raycastVehicle);
-      }
-
-      addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
-      // addTrimesh()
-      // addHeightfield()
-
+      // ============
+      // helper functions
+      // ============
       async function initBabylonJS() {
-        // // Scene
         const scene = new BABYLON.Scene(engine);
-        // Camera
-        camera = new BABYLON.ArcRotateCamera(
+
+        const camera = new BABYLON.ArcRotateCamera(
           "camera",
           -Math.PI / 2,
           Math.PI / 2.5,
@@ -148,19 +80,18 @@
           scene
         );
 
-        light = new BABYLON.DirectionalLight(
+        const light = new BABYLON.DirectionalLight(
           "dir01",
           new BABYLON.Vector3(2, -8, 2),
           scene
         );
         light.intensity = 0.4;
 
-        // Shadow generator
-        shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+        const shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
 
         window.addEventListener("resize", onWindowResize);
 
-        return scene;
+        return { scene, shadowGenerator };
       }
 
       function onWindowResize() {
@@ -168,13 +99,14 @@
       }
 
       function initCannon() {
-        // Setup world
-        world = new CANNON.World();
+        const world = new CANNON.World();
         world.gravity.set(0, -9.81, 0);
+
+        return world;
       }
 
       function initCannonDebugger() {
-        cannonDebugger = new CannonDebugger(scene, world, {
+        return new CannonDebugger(scene, world, {
           onInit(body, mesh) {
             // Toggle visibiliy on "d" press
             document.addEventListener("keydown", (event) => {
@@ -186,67 +118,8 @@
         });
       }
 
-      function updateMeshPositions() {
-        if (raycastVehicle) {
-          for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
-            raycastVehicle.updateWheelTransform(i);
-            const { position, quaternion } =
-              raycastVehicle.wheelInfos[i].worldTransform;
-            const wheelBody = raycastVehicle.wheelBodies[i];
-            const wheelMesh = raycastVehicle.wheelMeshes[i];
-
-            wheelBody.position.set(position.x, position.y, position.z);
-            wheelBody.quaternion.set(
-              quaternion.x,
-              quaternion.y,
-              quaternion.z,
-              quaternion.w
-            );
-            wheelMesh.position.set(position.x, position.y, position.z);
-            wheelMesh.quaternion.set(
-              quaternion.x,
-              quaternion.y,
-              quaternion.z,
-              quaternion.w
-            );
-          }
-        }
-
-        let meshIndex = 0;
-        for (const body of world.bodies) {
-          for (let i = 0; i !== body.shapes.length; i++) {
-            const shape = body.shapes[i];
-            const mesh = meshes[meshIndex];
-            if (mesh && mesh !== "wheel") {
-              // Get world position
-              body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition);
-              body.position.vadd(shapeWorldPosition, shapeWorldPosition);
-              // Get world quaternion
-              body.quaternion.mult(
-                body.shapeOrientations[i],
-                shapeWorldQuaternion
-              );
-              mesh.position.set(
-                shapeWorldPosition.x,
-                shapeWorldPosition.y,
-                shapeWorldPosition.z
-              );
-
-              if (mesh.rotationQuaternion) {
-                mesh.rotationQuaternion.set(
-                  shapeWorldQuaternion.x,
-                  shapeWorldQuaternion.y,
-                  shapeWorldQuaternion.z,
-                  shapeWorldQuaternion.w
-                );
-              }
-            }
-            meshIndex++;
-          }
-        }
-      }
-
-      function addPlane() {
+      function addPlane({ name = `plane_${meshCounter}` } = {}) {
+        meshCounter = meshCounter + 1;
         // Physics
         const shape = new CANNON.Plane();
         const body = new CANNON.Body({ mass: 0 });
@@ -257,7 +130,7 @@
 
         // Graphics
         const plane = BABYLON.MeshBuilder.CreatePlane(
-          "plane",
+          name,
           { width: 10, height: 10 },
           scene
         );
@@ -266,7 +139,15 @@
         meshes.push(plane);
       }
 
-      function addBox({ width, height, depth, position, mass }) {
+      function addBox({
+        width,
+        height,
+        depth,
+        position,
+        mass,
+        name = `box_${meshCounter}`,
+      }) {
+        meshCounter = meshCounter + 1;
         const size = 1;
 
         // Physics
@@ -283,7 +164,7 @@
         bodies.push(body);
 
         // Graphics
-        const box = BABYLON.MeshBuilder.CreateBox("box", {
+        const box = BABYLON.MeshBuilder.CreateBox(name, {
           width,
           height,
           depth,
@@ -299,10 +180,12 @@
 
       function addSphere({
         mass,
+        name = `sphere_${meshCounter}`,
         wheelMaterial = undefined,
         position,
         radius,
       }) {
+        meshCounter = meshCounter + 1;
         // Physics
         const body = new CANNON.Body({ mass, position, wheelMaterial });
         const shape = new CANNON.Sphere(radius);
@@ -312,7 +195,7 @@
         bodies.push(body);
 
         // Graphics
-        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { radius });
+        const sphere = BABYLON.MeshBuilder.CreateSphere(name, { radius });
         sphere.scalingDeterminant = radius * 2;
         sphere.rotationQuaternion =
           sphere.rotationQuaternion || new BABYLON.Quaternion();
@@ -325,7 +208,7 @@
 
       function addCylinder({
         isWheel = false,
-        name = "cylinder",
+        name = `cylinder_${meshCounter}`,
         height = 1,
         position,
         radius = 1,
@@ -335,6 +218,7 @@
         material,
         numSegments = 12,
       }) {
+        meshCounter = meshCounter + 1;
         // Physics
         const body = new CANNON.Body({ mass });
         const shape = new CANNON.Cylinder(
@@ -387,260 +271,11 @@
       }
 
       function addWheel(options) {
-        return addCylinder({ name: "wheel", isWheel: true, ...options });
+        return addCylinder({
+          isWheel: true,
+          ...options,
+        });
       }
-
-      // function addTrimesh() {
-      //   const radius = 1
-      //   const tube = 0.3
-      //   const radialSegments = 16
-
-      //   // Physics
-      //   const body = new CANNON.Body({ mass })
-      //   const shape = CANNON.Trimesh.createTorus(radius, tube, radialSegments, 16)
-      //   body.addShape(shape)
-      //   body.position.set(-3, 2, -1)
-      //   body.quaternion.setFromEuler(Math.PI * 0.1, 0, 0)
-      //   world.addBody(body)
-      //   bodies.push(body)
-
-      //   // Graphics
-      //   const geometry = new THREE.TorusGeometry(radius, tube, radialSegments, 100)
-      //   const mesh = new THREE.Mesh(geometry, material)
-      //   // position and quaternion of the mesh are set by updateMeshPositions...
-      //   mesh.castShadow = true
-      //   mesh.receiveShadow = true
-      //   scene.add(mesh)
-      //   meshes.push(mesh)
-      // }
-
-      // function addHeightfield() {
-      //   const sizeX = 20 // number of vertices in the X axis
-      //   const sizeY = 20 // number of vertices in the Y axis
-      //   const elementSize = 0.3 // cell width
-      //   const depth = 0.6
-
-      //   // Physics
-      //   const body = new CANNON.Body({ mass: 0 })
-      //   const matrix = []
-      //   for (let i = 0; i < sizeX; i++) {
-      //     matrix.push([])
-      //     for (let j = 0; j < sizeY; j++) {
-      //       const height = Math.cos((i / (sizeX - 1)) * Math.PI * 2) * Math.cos((j / (sizeY - 1)) * Math.PI * 2) * depth
-      //       matrix[i].push(height)
-      //     }
-      //   }
-      //   const shape = new CANNON.Heightfield(matrix, { elementSize })
-      //   body.addShape(shape, new CANNON.Vec3((-(sizeX - 1) / 2) * elementSize, (-(sizeY - 1) / 2) * elementSize, 0))
-      //   body.position.set(0, depth, -6)
-      //   body.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
-      //   world.addBody(body)
-      //   bodies.push(body)
-
-      //   // Graphics
-      //   const geometry = new THREE.PlaneGeometry(
-      //     (sizeX - 1) * elementSize,
-      //     (sizeY - 1) * elementSize,
-      //     sizeX - 1,
-      //     sizeY - 1
-      //   )
-      //   for (let i = 0; i < sizeX; i++) {
-      //     for (let j = 0; j < sizeY; j++) {
-      //       const height = Math.cos((i / (sizeX - 1)) * Math.PI * 2) * Math.cos((j / (sizeY - 1)) * Math.PI * 2) * depth
-
-      //       geometry.attributes.position.setZ(i * sizeX + j, height)
-      //     }
-      //   }
-      //   geometry.computeBoundingSphere()
-      //   geometry.computeVertexNormals()
-      //   const mesh = new THREE.Mesh(geometry, material)
-      //   // position and quaternion of the mesh are set by updateMeshPositions...
-      //   mesh.castShadow = true
-      //   mesh.receiveShadow = true
-      //   scene.add(mesh)
-      //   meshes.push(mesh)
-      // }
-
-      function addRigidVehicle({ position }) {
-        const carBody = addBox({
-          mass: 5,
-          position,
-          width: carChassisSize.width,
-          height: carChassisSize.height,
-          depth: carChassisSize.depth,
-        });
-
-        // because of some reason it looks like it's upside down
-        carBody.quaternion.setFromEuler(-Math.PI, 0, 0);
-
-        const vehicle = new CANNON.RigidVehicle({
-          chassisBody: carBody,
-        });
-
-        // wheels
-        const wheelMass = 1;
-        const axisWidth = carChassisSize.width;
-        const wheelMaterial = new CANNON.Material("wheel");
-        const down = new CANNON.Vec3(0, -1, 0);
-
-        const wheelBody1 = addSphere({
-          mass: wheelMass,
-          wheelMaterial,
-          position: { x: 0, y: 0, z: 0 },
-          radius: carWheelSize,
-        });
-        wheelBody1.angularDamping = 0.4;
-        vehicle.addWheel({
-          body: wheelBody1,
-          position: new CANNON.Vec3(-1, 0.3, axisWidth / 6),
-          axis: new CANNON.Vec3(0, 0, 1),
-          direction: down,
-        });
-
-        const wheelBody2 = addSphere({
-          mass: wheelMass,
-          wheelMaterial,
-          position: { x: 0, y: 0, z: 0 },
-          radius: carWheelSize,
-        });
-        wheelBody2.angularDamping = 0.4;
-        vehicle.addWheel({
-          body: wheelBody2,
-          position: new CANNON.Vec3(-1, 0.3, -axisWidth / 6),
-          axis: new CANNON.Vec3(0, 0, 1),
-          direction: down,
-        });
-
-        const wheelBody3 = addSphere({
-          mass: wheelMass,
-          wheelMaterial,
-          position: { x: 0, y: 0, z: 0 },
-          radius: carWheelSize,
-        });
-        wheelBody3.angularDamping = 0.4;
-        vehicle.addWheel({
-          body: wheelBody3,
-          position: new CANNON.Vec3(1, 0.3, axisWidth / 6),
-          axis: new CANNON.Vec3(0, 0, 1),
-          direction: down,
-        });
-
-        const wheelBody4 = addSphere({
-          mass: wheelMass,
-          wheelMaterial,
-          position: { x: 0, y: 0, z: 0 },
-          radius: carWheelSize,
-        });
-        wheelBody4.angularDamping = 0.4;
-        vehicle.addWheel({
-          body: wheelBody4,
-          position: new CANNON.Vec3(1, 0.3, -axisWidth / 6),
-          axis: new CANNON.Vec3(0, 0, 1),
-          direction: down,
-        });
-
-        vehicle.addToWorld(world);
-
-        return vehicle;
-      }
-
-      function addRaycastVehicle({ position }) {
-        const carBody = addBox({
-          mass: 50,
-          position,
-          width: carChassisSize.width,
-          height: carChassisSize.height,
-          depth: carChassisSize.depth,
-        });
-
-        // because of some reason it looks like it's upside down
-        // carBody.quaternion.setFromEuler(-Math.PI, 0, 0)
-
-        const vehicle = new CANNON.RaycastVehicle({
-          chassisBody: carBody,
-        });
-
-        // wheels
-        const wheelMass = 1;
-        const radius = 0.3;
-        const axisWidth = carChassisSize.width;
-        const wheelMaterial = new CANNON.Material("wheel");
-        const down = new CANNON.Vec3(0, -1, 0);
-
-        const wheelOptions = {
-          radius,
-          directionLocal: down,
-          suspensionStiffness: 30,
-          suspensionRestLength: 0.3,
-          frictionSlip: 1.4,
-          dampingRelaxation: 2.3,
-          dampingCompression: 4.4,
-          maxSuspensionForce: 100000,
-          rollInfluence: 0.01,
-          axleLocal: new CANNON.Vec3(0, 0, 0),
-          chassisConnectionPointLocal: new CANNON.Vec3(-1, 0, 1),
-          maxSuspensionTravel: 0.3,
-          customSlidingRotationalSpeed: -30,
-          useCustomSlidingRotationalSpeed: true,
-        };
-
-        wheelOptions.chassisConnectionPointLocal.set(-1, 0, 1);
-        vehicle.addWheel(wheelOptions);
-
-        wheelOptions.chassisConnectionPointLocal.set(-1, 0, -1);
-        vehicle.addWheel(wheelOptions);
-
-        wheelOptions.chassisConnectionPointLocal.set(1, 0, 1);
-        vehicle.addWheel(wheelOptions);
-
-        wheelOptions.chassisConnectionPointLocal.set(1, 0, -1);
-        vehicle.addWheel(wheelOptions);
-
-        vehicle.wheelBodies = [];
-        vehicle.wheelMeshes = [];
-
-        vehicle.wheelInfos.forEach((wheel) => {
-          const { body, cylinder, shape } = addWheel({
-            height: radius / 2,
-            position: { x: 0, y: 0, z: 0 },
-            radiusTop: radius,
-            radiusBottom: radius,
-            wheelMaterial,
-          });
-          body.type = CANNON.Body.KINEMATIC;
-          body.collisionFilterGroup = 0; // turn off collisions)
-          vehicle.wheelBodies.push(body);
-          vehicle.wheelMeshes.push(cylinder);
-        });
-
-        const groundMaterial = new CANNON.Material("ground");
-        const wheel_ground = new CANNON.ContactMaterial(
-          wheelMaterial,
-          groundMaterial,
-          {
-            friction: 0.3,
-            restitution: 0,
-            contactEquationStiffness: 1000,
-          }
-        );
-        world.addContactMaterial(wheel_ground);
-
-        vehicle.addToWorld(world);
-
-        return vehicle;
-      }
-
-      engine.runRenderLoop(function () {
-        world.fixedStep();
-
-        scene.render();
-
-        // Update the debugger
-        cannonDebugger.update();
-
-        // Update the visible meshes positions
-        updateMeshPositions();
-      });
 
       function addRigidListeners(vehicle) {
         document.addEventListener("keydown", (event) => {
@@ -780,6 +415,350 @@
           }
         });
       }
+
+      // function addTrimesh() {
+      //   const radius = 1
+      //   const tube = 0.3
+      //   const radialSegments = 16
+
+      //   // Physics
+      //   const body = new CANNON.Body({ mass })
+      //   const shape = CANNON.Trimesh.createTorus(radius, tube, radialSegments, 16)
+      //   body.addShape(shape)
+      //   body.position.set(-3, 2, -1)
+      //   body.quaternion.setFromEuler(Math.PI * 0.1, 0, 0)
+      //   world.addBody(body)
+      //   bodies.push(body)
+
+      //   // Graphics
+      //   const geometry = new THREE.TorusGeometry(radius, tube, radialSegments, 100)
+      //   const mesh = new THREE.Mesh(geometry, material)
+      //   // position and quaternion of the mesh are set by updateMeshPositions...
+      //   mesh.castShadow = true
+      //   mesh.receiveShadow = true
+      //   scene.add(mesh)
+      //   meshes.push(mesh)
+      // }
+
+      // function addHeightfield() {
+      //   const sizeX = 20 // number of vertices in the X axis
+      //   const sizeY = 20 // number of vertices in the Y axis
+      //   const elementSize = 0.3 // cell width
+      //   const depth = 0.6
+
+      //   // Physics
+      //   const body = new CANNON.Body({ mass: 0 })
+      //   const matrix = []
+      //   for (let i = 0; i < sizeX; i++) {
+      //     matrix.push([])
+      //     for (let j = 0; j < sizeY; j++) {
+      //       const height = Math.cos((i / (sizeX - 1)) * Math.PI * 2) * Math.cos((j / (sizeY - 1)) * Math.PI * 2) * depth
+      //       matrix[i].push(height)
+      //     }
+      //   }
+      //   const shape = new CANNON.Heightfield(matrix, { elementSize })
+      //   body.addShape(shape, new CANNON.Vec3((-(sizeX - 1) / 2) * elementSize, (-(sizeY - 1) / 2) * elementSize, 0))
+      //   body.position.set(0, depth, -6)
+      //   body.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
+      //   world.addBody(body)
+      //   bodies.push(body)
+
+      //   // Graphics
+      //   const geometry = new THREE.PlaneGeometry(
+      //     (sizeX - 1) * elementSize,
+      //     (sizeY - 1) * elementSize,
+      //     sizeX - 1,
+      //     sizeY - 1
+      //   )
+      //   for (let i = 0; i < sizeX; i++) {
+      //     for (let j = 0; j < sizeY; j++) {
+      //       const height = Math.cos((i / (sizeX - 1)) * Math.PI * 2) * Math.cos((j / (sizeY - 1)) * Math.PI * 2) * depth
+
+      //       geometry.attributes.position.setZ(i * sizeX + j, height)
+      //     }
+      //   }
+      //   geometry.computeBoundingSphere()
+      //   geometry.computeVertexNormals()
+      //   const mesh = new THREE.Mesh(geometry, material)
+      //   // position and quaternion of the mesh are set by updateMeshPositions...
+      //   mesh.castShadow = true
+      //   mesh.receiveShadow = true
+      //   scene.add(mesh)
+      //   meshes.push(mesh)
+      // }
+
+      function addRigidVehicle({ position }) {
+        const carChassisSize = {
+          width: 4,
+          height: 0.5,
+          depth: 2,
+        };
+        const carWheelSize = 0.5;
+
+        const carBody = addBox({
+          mass: 5,
+          position,
+          width: carChassisSize.width,
+          height: carChassisSize.height,
+          depth: carChassisSize.depth,
+        });
+
+        // because of some reason it looks like it's upside down
+        carBody.quaternion.setFromEuler(-Math.PI, 0, 0);
+
+        const vehicle = new CANNON.RigidVehicle({
+          chassisBody: carBody,
+        });
+
+        // wheels
+        const wheelMass = 1;
+        const axisWidth = carChassisSize.width;
+        const wheelMaterial = new CANNON.Material("wheel");
+        const down = new CANNON.Vec3(0, -1, 0);
+
+        for (let idx = 0; idx < 4; idx++) {
+          const wheelBody = addSphere({
+            mass: wheelMass,
+            wheelMaterial,
+            position: { x: 0, y: 0, z: 0 },
+            radius: carWheelSize,
+          });
+
+          wheelBody.angularDamping = 0.4;
+          const isFrontAxis = idx < 2 ? -1 : 1;
+          const yPos = idx % 2 === 0 ? 1 : -1;
+
+          vehicle.addWheel({
+            body: wheelBody,
+            position: new CANNON.Vec3(isFrontAxis, 0.3, (axisWidth * yPos) / 6),
+            axis: new CANNON.Vec3(0, 0, isFrontAxis),
+            direction: down,
+          });
+        }
+
+        vehicle.addToWorld(world);
+
+        return vehicle;
+      }
+
+      function addRaycastVehicle({ position }) {
+        const carChassisSize = {
+          width: 4,
+          height: 0.5,
+          depth: 2,
+        };
+
+        const carBody = addBox({
+          mass: 50,
+          position,
+          width: carChassisSize.width,
+          height: carChassisSize.height,
+          depth: carChassisSize.depth,
+        });
+
+        // because of some reason it looks like it's upside down
+        // carBody.quaternion.setFromEuler(-Math.PI, 0, 0);
+
+        const vehicle = new CANNON.RaycastVehicle({
+          chassisBody: carBody,
+        });
+
+        // wheels
+        const wheelMass = 1;
+        const radius = 0.3;
+        const axisWidth = carChassisSize.width;
+        const wheelMaterial = new CANNON.Material("wheel");
+        const down = new CANNON.Vec3(0, -1, 0);
+
+        const wheelOptions = {
+          radius,
+          directionLocal: down,
+          suspensionStiffness: 30,
+          suspensionRestLength: 0.3,
+          frictionSlip: 1.4,
+          dampingRelaxation: 2.3,
+          dampingCompression: 4.4,
+          maxSuspensionForce: 100000,
+          rollInfluence: 0.01,
+          axleLocal: new CANNON.Vec3(0, 0, 0),
+          chassisConnectionPointLocal: new CANNON.Vec3(-1, 0, 1),
+          maxSuspensionTravel: 0.3,
+          customSlidingRotationalSpeed: -30,
+          useCustomSlidingRotationalSpeed: true,
+        };
+
+        wheelOptions.chassisConnectionPointLocal.set(-1, 0, 1);
+        vehicle.addWheel(wheelOptions);
+
+        wheelOptions.chassisConnectionPointLocal.set(-1, 0, -1);
+        vehicle.addWheel(wheelOptions);
+
+        wheelOptions.chassisConnectionPointLocal.set(1, 0, 1);
+        vehicle.addWheel(wheelOptions);
+
+        wheelOptions.chassisConnectionPointLocal.set(1, 0, -1);
+        vehicle.addWheel(wheelOptions);
+
+        vehicle.wheelBodies = [];
+        vehicle.wheelMeshes = [];
+
+        vehicle.wheelInfos.forEach((wheel) => {
+          const { body, cylinder, shape } = addWheel({
+            height: radius / 2,
+            position: { x: 0, y: 0, z: 0 },
+            radiusTop: radius,
+            radiusBottom: radius,
+            wheelMaterial,
+          });
+          body.type = CANNON.Body.KINEMATIC;
+          body.collisionFilterGroup = 0; // turn off collisions)
+          vehicle.wheelBodies.push(body);
+          vehicle.wheelMeshes.push(cylinder);
+        });
+
+        const groundMaterial = new CANNON.Material("ground");
+        const wheel_ground = new CANNON.ContactMaterial(
+          wheelMaterial,
+          groundMaterial,
+          {
+            friction: 0.3,
+            restitution: 0,
+            contactEquationStiffness: 1000,
+          }
+        );
+        world.addContactMaterial(wheel_ground);
+
+        vehicle.addToWorld(world);
+
+        return vehicle;
+      }
+
+      // ============
+      // the most important demo code starts here
+      // ============
+      const shapeWorldPosition = new CANNON.Vec3();
+      const shapeWorldQuaternion = new CANNON.Quaternion();
+
+      const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+      const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+      let meshCounter = 0;
+
+      // To be kept in sync
+      let meshes = [];
+      let bodies = [];
+
+      const { scene, shadowGenerator } = await initBabylonJS();
+
+      const world = initCannon();
+      const cannonDebugger = initCannonDebugger();
+
+      addPlane();
+      addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
+
+      let rigidVehicle, raycastVehicle;
+
+      rigidVehicle = addRigidVehicle({
+        position: {
+          x: 8,
+          y: 6,
+          z: 0,
+        },
+      });
+
+      // raycastVehicle = addRaycastVehicle({ position: { x: 8, y: 6, z: 0 } });
+
+      setTimeout(() => {
+        addBox({
+          width: 1,
+          height: 1,
+          depth: 1,
+          position: { x: 2, y: 3, z: 0.5 },
+          mass: 1,
+        });
+      }, 500);
+
+      if (rigidVehicle) {
+        addRigidListeners(rigidVehicle);
+      }
+
+      if (raycastVehicle) {
+        addRaycastListeners(raycastVehicle);
+      }
+
+      addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
+      // addTrimesh()
+      // addHeightfield()
+
+      function updateMeshPositions() {
+        if (raycastVehicle) {
+          for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
+            raycastVehicle.updateWheelTransform(i);
+            const { position, quaternion } =
+              raycastVehicle.wheelInfos[i].worldTransform;
+            const wheelBody = raycastVehicle.wheelBodies[i];
+            const wheelMesh = raycastVehicle.wheelMeshes[i];
+
+            wheelBody.position.set(position.x, position.y, position.z);
+            wheelBody.quaternion.set(
+              quaternion.x,
+              quaternion.y,
+              quaternion.z,
+              quaternion.w
+            );
+            wheelMesh.position.set(position.x, position.y, position.z);
+            wheelMesh.quaternion.set(
+              quaternion.x,
+              quaternion.y,
+              quaternion.z,
+              quaternion.w
+            );
+          }
+        }
+
+        let meshIndex = 0;
+        for (const body of world.bodies) {
+          for (let i = 0; i !== body.shapes.length; i++) {
+            const shape = body.shapes[i];
+            const mesh = meshes[meshIndex];
+            if (mesh && mesh !== "wheel") {
+              // Get world position
+              body.quaternion.vmult(body.shapeOffsets[i], shapeWorldPosition);
+              body.position.vadd(shapeWorldPosition, shapeWorldPosition);
+              // Get world quaternion
+              body.quaternion.mult(
+                body.shapeOrientations[i],
+                shapeWorldQuaternion
+              );
+              mesh.position.set(
+                shapeWorldPosition.x,
+                shapeWorldPosition.y,
+                shapeWorldPosition.z
+              );
+
+              if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion.set(
+                  shapeWorldQuaternion.x,
+                  shapeWorldQuaternion.y,
+                  shapeWorldQuaternion.z,
+                  shapeWorldQuaternion.w
+                );
+              }
+            }
+            meshIndex++;
+          }
+        }
+      }
+
+      engine.runRenderLoop(function () {
+        world.fixedStep();
+
+        scene.render();
+
+        cannonDebugger.update();
+
+        updateMeshPositions();
+      });
     </script>
   </body>
 </html>
