@@ -27,11 +27,17 @@ This is a debugger inspired by https://github.com/pmndrs/cannon-es-debugger whic
 ### Development
 
 First install all the dependencies by running
-`yarn`
+```
+yarn
+```
 or `npm install`
 
 Next create developers build with watcher by running
-`yarn dev`
+```
+yarn dev
+```
 and in another terminal window start serving the application with
-`yarn start`
+```
+yarn start
+```
 This will show you the `index.html` at the `localhost:3000`
