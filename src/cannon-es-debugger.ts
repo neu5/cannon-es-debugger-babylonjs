@@ -1,12 +1,9 @@
 import {
   Quaternion as CannonQuaternion,
   Vec3 as CannonVector3,
-  // ConvexPolyhedron,
-  // Heightfield,
   Shape,
-  // Trimesh,
 } from "cannon-es";
-import type { AbstractMesh, Mesh, Scene } from "@babylonjs/core";
+import type { Mesh, Scene } from "@babylonjs/core";
 import {
   Color3,
   MeshBuilder,
@@ -14,9 +11,14 @@ import {
   StandardMaterial,
   Vector3,
 } from "@babylonjs/core";
-import type { Body as CannonBody, Sphere, World } from "cannon-es";
+import type {
+  Box,
+  Body as CannonBody,
+  Cylinder,
+  Sphere,
+  World,
+} from "cannon-es";
 
-type ComplexShape = Shape & { geometryId?: number };
 export type DebugOptions = {
   color?: { r: number; g: number; b: number };
   scale?: number;
@@ -35,112 +37,30 @@ export default function CannonDebugger(
   }: DebugOptions = {}
 ) {
   const meshes: Mesh[] = [];
-  const _material = new StandardMaterial("myMaterial", scene);
-  _material.diffuseColor = new Color3(color.r, color.g, color.b);
-  _material.wireframe = true;
-  const _tempVec0 = new CannonVector3();
-  const _tempVec1 = new CannonVector3();
-  const _tempVec2 = new CannonVector3();
-  const _tempQuat0 = new CannonQuaternion();
+  const material = new StandardMaterial("myMaterial", scene);
+  material.diffuseColor = new Color3(color.r, color.g, color.b);
+  material.wireframe = true;
+  const tempVec0 = new CannonVector3();
+  const tempQuat0 = new CannonQuaternion();
+  let meshCounter: number = 0;
 
-  //   function createConvexPolyhedronGeometry(shape: ConvexPolyhedron): BufferGeometry {
-  //     const geometry = new BufferGeometry()
-  //     // Add vertices
-  //     const positions = []
-  //     for (let i = 0; i < shape.vertices.length; i++) {
-  //       const vertex = shape.vertices[i]
-  //       positions.push(vertex.x, vertex.y, vertex.z)
-  //     }
-  //     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
-  //     // Add faces
-  //     const indices = []
-  //     for (let i = 0; i < shape.faces.length; i++) {
-  //       const face = shape.faces[i]
-  //       const a = face[0]
-  //       for (let j = 1; j < face.length - 1; j++) {
-  //         const b = face[j]
-  //         const c = face[j + 1]
-  //         indices.push(a, b, c)
-  //       }
-  //     }
-  //     geometry.setIndex(indices)
-  //     geometry.computeBoundingSphere()
-  //     geometry.computeVertexNormals()
-  //     return geometry
-  //   }
-  //   function createTrimeshGeometry(shape: Trimesh): BufferGeometry {
-  //     const geometry = new BufferGeometry()
-  //     const positions = []
-  //     const v0 = _tempVec0
-  //     const v1 = _tempVec1
-  //     const v2 = _tempVec2
-  //     for (let i = 0; i < shape.indices.length / 3; i++) {
-  //       shape.getTriangleVertices(i, v0, v1, v2)
-  //       positions.push(v0.x, v0.y, v0.z)
-  //       positions.push(v1.x, v1.y, v1.z)
-  //       positions.push(v2.x, v2.y, v2.z)
-  //     }
-  //     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
-  //     geometry.computeBoundingSphere()
-  //     geometry.computeVertexNormals()
-  //     return geometry
-  //   }
-  //   function createHeightfieldGeometry(shape: Heightfield): BufferGeometry {
-  //     const geometry = new BufferGeometry()
-  //     const s = shape.elementSize || 1 // assumes square heightfield, else i*x, j*y
-  //     const positions = shape.data.flatMap((row, i) => row.flatMap((z, j) => [i * s, j * s, z]))
-  //     const indices = []
-  //     for (let xi = 0; xi < shape.data.length - 1; xi++) {
-  //       for (let yi = 0; yi < shape.data[xi].length - 1; yi++) {
-  //         const stride = shape.data[xi].length
-  //         const index = xi * stride + yi
-  //         indices.push(index + 1, index + stride, index + stride + 1)
-  //         indices.push(index + stride, index + 1, index)
-  //       }
-  //     }
-  //     geometry.setIndex(indices)
-  //     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
-  //     geometry.computeBoundingSphere()
-  //     geometry.computeVertexNormals()
-  //     return geometry
-  //   }
-  function createMesh(shape: Shape): AbstractMesh {
+  function createMesh(shape: Shape): Mesh | undefined {
     let mesh;
-    const {
-      SPHERE,
-      BOX,
-      PLANE,
-      CYLINDER,
-      CONVEXPOLYHEDRON,
-      TRIMESH,
-      HEIGHTFIELD,
-    } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
 
     switch (shape.type) {
-      case SPHERE: {
-        mesh = MeshBuilder.CreateSphere("sphere", { segments: 16 }, scene);
-        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
-        break;
-      }
-      case PLANE: {
-        mesh = MeshBuilder.CreatePlane(
-          "plane",
-          { width: 10, height: 10 },
-          scene
-        );
-        mesh.rotation = new Vector3(Math.PI / 2, 0, 0);
-        break;
-      }
       case BOX: {
-        mesh = MeshBuilder.CreateBox("box", {}, scene);
+        mesh = MeshBuilder.CreateBox(`box_${meshCounter}`, {}, scene);
+        meshCounter = meshCounter + 1;
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
       }
       case CYLINDER: {
-        const { height, numSegments, radiusBottom, radiusTop } = shape;
+        const { height, numSegments, radiusBottom, radiusTop } =
+          shape as Cylinder;
 
         mesh = MeshBuilder.CreateCylinder(
-          "cylinder",
+          `cylinder_${meshCounter}`,
           {
             diameterTop: radiusTop * 2,
             diameterBottom: radiusBottom * 2,
@@ -149,83 +69,74 @@ export default function CannonDebugger(
           },
           scene
         );
+        meshCounter = meshCounter + 1;
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
       }
-      //   case CONVEXPOLYHEDRON: {
-      //     const geometry = createConvexPolyhedronGeometry(shape as ConvexPolyhedron)
-      //     mesh = new Mesh(geometry, _material)
-      //     ;(shape as ComplexShape).geometryId = geometry.id
-      //     break
-      //   }
-      //   case TRIMESH: {
-      //     const geometry = createTrimeshGeometry(shape as Trimesh)
-      //     mesh = new Mesh(geometry, _material)
-      //     ;(shape as ComplexShape).geometryId = geometry.id
-      //     break
-      //   }
-      //   case HEIGHTFIELD: {
-      //     const geometry = createHeightfieldGeometry(shape as Heightfield)
-      //     mesh = new Mesh(geometry, _material)
-      //     ;(shape as ComplexShape).geometryId = geometry.id
-      //     break
-      //   }
+      case PLANE: {
+        mesh = MeshBuilder.CreatePlane(
+          `plane_${meshCounter}`,
+          { width: 10, height: 10 },
+          scene
+        );
+        meshCounter = meshCounter + 1;
+        mesh.rotation = new Vector3(Math.PI / 2, 0, 0);
+        break;
+      }
+      case SPHERE: {
+        mesh = MeshBuilder.CreateSphere(
+          `sphere_${meshCounter}`,
+          { segments: 16 },
+          scene
+        );
+        meshCounter = meshCounter + 1;
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+        break;
+      }
     }
 
-    mesh.material = _material;
+    if (!mesh) {
+      return;
+    }
+
+    mesh.material = material;
     scene.addMesh(mesh);
+
     return mesh;
   }
 
   function scaleMesh(mesh: Mesh, shape: Shape): void {
-    const {
-      SPHERE,
-      BOX,
-      PLANE,
-      CYLINDER,
-      CONVEXPOLYHEDRON,
-      TRIMESH,
-      HEIGHTFIELD,
-    } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
+
     switch (shape.type) {
-      case SPHERE: {
-        const { radius } = shape as Sphere;
-        mesh.scalingDeterminant = radius * scale * 2;
-        break;
-      }
       case BOX: {
+        const { halfExtents } = shape as Box;
         const size = new Vector3(
-          shape.halfExtents.x * scale * 2,
-          shape.halfExtents.y * scale * 2,
-          shape.halfExtents.z * scale * 2
+          halfExtents.x * scale * 2,
+          halfExtents.y * scale * 2,
+          halfExtents.z * scale * 2
         );
         mesh.scaling = size;
-        break;
-      }
-      case PLANE: {
         break;
       }
       case CYLINDER: {
         break;
       }
-      // case CONVEXPOLYHEDRON: {
-      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-      //   break
-      // }
-      // case TRIMESH: {
-      //   mesh.scale.copy((shape as Trimesh).scale as unknown as Vector3).multiplyScalar(scale)
-      //   break
-      // }
-      // case HEIGHTFIELD: {
-      //   mesh.scale.set(1 * scale, 1 * scale, 1 * scale)
-      //   break
-      // }
+      case PLANE: {
+        break;
+      }
+      case SPHERE: {
+        const { radius } = shape as Sphere;
+        mesh.scalingDeterminant = radius * scale * 2;
+        break;
+      }
     }
   }
 
-  function typeMatch(mesh: AbstractMesh, shape: Shape | ComplexShape): boolean {
-    if (!mesh) return false;
-    // const { geometry } = mesh
+  function typeMatch(mesh: Mesh, shape: Shape): boolean {
+    if (!mesh) {
+      return false;
+    }
 
     return (
       shape.type === Shape.types.SPHERE ||
@@ -233,29 +144,31 @@ export default function CannonDebugger(
       shape.type === Shape.types.BOX ||
       shape.type === Shape.types.CYLINDER
     );
-    // geometry instanceof SphereGeometry && shape.type === Shape.types.SPHERE ||
-    // (geometry instanceof BoxGeometry && shape.type === Shape.types.BOX) ||
-    // (geometry instanceof PlaneGeometry && shape.type === Shape.types.PLANE) ||
-    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CYLINDER) ||
-    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.CONVEXPOLYHEDRON) ||
-    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.TRIMESH) ||
-    // (geometry.id === (shape as ComplexShape).geometryId && shape.type === Shape.types.HEIGHTFIELD)
   }
-  function updateMesh(index: number, shape: Shape | ComplexShape): boolean {
+
+  function updateMesh(index: number, shape: Shape): boolean {
     let mesh = meshes[index];
     let didCreateNewMesh = false;
     if (!typeMatch(mesh, shape)) {
-      if (mesh) scene.removeMesh(mesh);
-      meshes[index] = mesh = createMesh(shape);
+      if (mesh) {
+        scene.removeMesh(mesh);
+      }
+
+      const newMesh = createMesh(shape);
+      if (newMesh) {
+        meshes[index] = mesh = newMesh;
+      }
+
       didCreateNewMesh = true;
     }
     scaleMesh(mesh, shape);
     return didCreateNewMesh;
   }
+
   function update(): void {
     const meshesCopy = meshes;
-    const shapeWorldPosition = _tempVec0;
-    const shapeWorldQuaternion = _tempQuat0;
+    const shapeWorldPosition = tempVec0;
+    const shapeWorldQuaternion = tempQuat0;
     let meshIndex = 0;
     for (const body of world.bodies) {
       for (let i = 0; i !== body.shapes.length; i++) {
