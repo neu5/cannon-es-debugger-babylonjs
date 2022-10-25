@@ -687,8 +687,6 @@
       }
 
       addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
-      // addTrimesh()
-      // addHeightfield()
 
       function updateMeshPositions() {
         if (raycastVehicle) {
@@ -753,11 +751,11 @@
       engine.runRenderLoop(function () {
         world.fixedStep();
 
-        scene.render();
-
         cannonDebugger.update();
 
         updateMeshPositions();
+
+        scene.render();
       });
     </script>
   </body>
