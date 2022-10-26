@@ -26,6 +26,10 @@ export type DebugOptions = {
   onUpdate?: (body: CannonBody, mesh: Mesh, shape: Shape) => void;
 };
 
+const BABYLON_DEBUGGER: string = "CANNONES_DEBUGGER_BABYLONJS";
+const getMeshName = (name: string, num: number) =>
+  `${name}_${BABYLON_DEBUGGER}_${num}`;
+
 export default function CannonDebugger(
   scene: Scene,
   world: World,
@@ -50,7 +54,11 @@ export default function CannonDebugger(
 
     switch (shape.type) {
       case BOX: {
-        mesh = MeshBuilder.CreateBox(`box_${meshCounter}`, {}, scene);
+        mesh = MeshBuilder.CreateBox(
+          getMeshName("box", meshCounter),
+          {},
+          scene
+        );
         meshCounter = meshCounter + 1;
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
@@ -60,7 +68,7 @@ export default function CannonDebugger(
           shape as Cylinder;
 
         mesh = MeshBuilder.CreateCylinder(
-          `cylinder_${meshCounter}`,
+          getMeshName("cylinder", meshCounter),
           {
             diameterTop: radiusTop * 2,
             diameterBottom: radiusBottom * 2,
@@ -75,7 +83,7 @@ export default function CannonDebugger(
       }
       case PLANE: {
         mesh = MeshBuilder.CreatePlane(
-          `plane_${meshCounter}`,
+          getMeshName("plane", meshCounter),
           { width: 10, height: 10 },
           scene
         );
@@ -85,7 +93,7 @@ export default function CannonDebugger(
       }
       case SPHERE: {
         mesh = MeshBuilder.CreateSphere(
-          `sphere_${meshCounter}`,
+          getMeshName("sphere", meshCounter),
           { segments: 16 },
           scene
         );

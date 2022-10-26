@@ -1,5 +1,11 @@
-import { Vec3, Quaternion, Shape } from 'cannon-es';
-import { StandardMaterial, Color3, MeshBuilder, Quaternion as Quaternion$1, Vector3 } from '@babylonjs/core';
+'use strict';
+
+var cannonEs = require('cannon-es');
+var core = require('@babylonjs/core');
+
+const BABYLON_DEBUGGER = "CANNONES_DEBUGGER_BABYLONJS";
+
+const getMeshName = (name, num) => name + "_" + BABYLON_DEBUGGER + "_" + num;
 
 function CannonDebugger(scene, world, _temp) {
   let {
@@ -13,11 +19,11 @@ function CannonDebugger(scene, world, _temp) {
     onUpdate
   } = _temp === void 0 ? {} : _temp;
   const meshes = [];
-  const material = new StandardMaterial("myMaterial", scene);
-  material.diffuseColor = new Color3(color.r, color.g, color.b);
+  const material = new core.StandardMaterial("myMaterial", scene);
+  material.diffuseColor = new core.Color3(color.r, color.g, color.b);
   material.wireframe = true;
-  const tempVec0 = new Vec3();
-  const tempQuat0 = new Quaternion();
+  const tempVec0 = new cannonEs.Vec3();
+  const tempQuat0 = new cannonEs.Quaternion();
   let meshCounter = 0;
 
   function createMesh(shape) {
@@ -27,14 +33,14 @@ function CannonDebugger(scene, world, _temp) {
       BOX,
       PLANE,
       CYLINDER
-    } = Shape.types;
+    } = cannonEs.Shape.types;
 
     switch (shape.type) {
       case BOX:
         {
-          mesh = MeshBuilder.CreateBox("box_" + meshCounter, {}, scene);
+          mesh = core.MeshBuilder.CreateBox(getMeshName("box", meshCounter), {}, scene);
           meshCounter = meshCounter + 1;
-          mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion$1();
+          mesh.rotationQuaternion = mesh.rotationQuaternion || new core.Quaternion();
           break;
         }
 
@@ -46,35 +52,35 @@ function CannonDebugger(scene, world, _temp) {
             radiusBottom,
             radiusTop
           } = shape;
-          mesh = MeshBuilder.CreateCylinder("cylinder_" + meshCounter, {
+          mesh = core.MeshBuilder.CreateCylinder(getMeshName("cylinder", meshCounter), {
             diameterTop: radiusTop * 2,
             diameterBottom: radiusBottom * 2,
             height,
             tessellation: numSegments
           }, scene);
           meshCounter = meshCounter + 1;
-          mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion$1();
+          mesh.rotationQuaternion = mesh.rotationQuaternion || new core.Quaternion();
           break;
         }
 
       case PLANE:
         {
-          mesh = MeshBuilder.CreatePlane("plane_" + meshCounter, {
+          mesh = core.MeshBuilder.CreatePlane(getMeshName("plane", meshCounter), {
             width: 10,
             height: 10
           }, scene);
           meshCounter = meshCounter + 1;
-          mesh.rotation = new Vector3(Math.PI / 2, 0, 0);
+          mesh.rotation = new core.Vector3(Math.PI / 2, 0, 0);
           break;
         }
 
       case SPHERE:
         {
-          mesh = MeshBuilder.CreateSphere("sphere_" + meshCounter, {
+          mesh = core.MeshBuilder.CreateSphere(getMeshName("sphere", meshCounter), {
             segments: 16
           }, scene);
           meshCounter = meshCounter + 1;
-          mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion$1();
+          mesh.rotationQuaternion = mesh.rotationQuaternion || new core.Quaternion();
           break;
         }
     }
@@ -94,7 +100,7 @@ function CannonDebugger(scene, world, _temp) {
       BOX,
       PLANE,
       CYLINDER
-    } = Shape.types;
+    } = cannonEs.Shape.types;
 
     switch (shape.type) {
       case BOX:
@@ -102,7 +108,7 @@ function CannonDebugger(scene, world, _temp) {
           const {
             halfExtents
           } = shape;
-          const size = new Vector3(halfExtents.x * scale * 2, halfExtents.y * scale * 2, halfExtents.z * scale * 2);
+          const size = new core.Vector3(halfExtents.x * scale * 2, halfExtents.y * scale * 2, halfExtents.z * scale * 2);
           mesh.scaling = size;
           break;
         }
@@ -133,7 +139,7 @@ function CannonDebugger(scene, world, _temp) {
       return false;
     }
 
-    return shape.type === Shape.types.SPHERE || shape.type === Shape.types.PLANE || shape.type === Shape.types.BOX || shape.type === Shape.types.CYLINDER;
+    return shape.type === cannonEs.Shape.types.SPHERE || shape.type === cannonEs.Shape.types.PLANE || shape.type === cannonEs.Shape.types.BOX || shape.type === cannonEs.Shape.types.CYLINDER;
   }
 
   function updateMesh(index, shape) {
@@ -204,4 +210,4 @@ function CannonDebugger(scene, world, _temp) {
   };
 }
 
-export { CannonDebugger as default };
+module.exports = CannonDebugger;

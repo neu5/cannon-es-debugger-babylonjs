@@ -1,7 +1,7 @@
 {
   "name": "cannon-es-debugger-babylonjs",
   "version": "1.0.0",
-  "description": "This is a debugger for use with cannon-es and BabylonJS https://github.com/pmndrs/cannon-es",
+  "description": "This is a debugger for use with cannon-es and BabylonJS",
   "keywords": [
     "debugger",
     "cannonjs",
@@ -23,9 +23,10 @@
     "url": "https://github.com/neu5/cannon-es-debugger-babylonjs/issues"
   },
   "license": "MIT",
-  "main": "./dist/cannon-es-debugger.cjs.js",
-  "module": "./dist/cannon-es-debugger.js",
-  "types": "./dist/cannon-es-debugger.d.ts",
+  "main": "./dist/cannon-es-debugger-babylonjs.js.js",
+  "module": "./dist/cannon-es-debugger-babylonjs.js",
+  "types": "./dist/cannon-es-debugger-babylonjs.d.ts",
+  "exports": "./dist/cannon-es-debugger-babylonjs.js",
   "sideEffects": false,
   "files": [
     "dist",
@@ -71,7 +72,7 @@
     "build:testprod": "rollup -c rollup.config.test.prod.js",
     "dev": "rollup -w -c rollup.config.dev.js",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false --strict",
-    "typegen": "tsc --outFile dist/cannon-es-debugger.d.ts",
+    "typegen": "tsc --outFile dist/cannon-es-debugger-babylonjs.d.ts",
     "start": "serve",
     "lint": "eslint 'src/*.ts'"
   }

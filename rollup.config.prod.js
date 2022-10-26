@@ -23,18 +23,18 @@ const babelOptions = {
 
 export default [
   {
-    input: `./src/cannon-es-debugger`,
+    input: `./src/cannon-es-debugger-babylonjs`,
     output: {
-      file: `dist/cannon-es-debugger.js`,
+      file: `dist/cannon-es-debugger-babylonjs.js`,
       format: "esm",
     },
     plugins: [resolve({ extensions }), babel(babelOptions)],
     external: ["cannon-es", "@babylonjs/core"],
   },
   {
-    input: `./src/cannon-es-debugger`,
+    input: `./src/cannon-es-debugger-babylonjs`,
     output: {
-      file: `dist/cannon-es-debugger.cjs.js`,
+      file: `dist/cannon-es-debugger-babylonjs.cjs.js`,
       format: "cjs",
       exports: "default",
     },
