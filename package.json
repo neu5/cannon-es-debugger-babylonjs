@@ -1,6 +1,6 @@
 {
   "name": "cannon-es-debugger-babylonjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "This is a debugger for use with cannon-es and BabylonJS",
   "keywords": [
     "debugger",
