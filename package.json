@@ -23,7 +23,7 @@
     "url": "https://github.com/neu5/cannon-es-debugger-babylonjs/issues"
   },
   "license": "MIT",
-  "main": "./dist/cannon-es-debugger-babylonjs.js.js",
+  "main": "./dist/cannon-es-debugger-babylonjs.js",
   "module": "./dist/cannon-es-debugger-babylonjs.js",
   "types": "./dist/cannon-es-debugger-babylonjs.d.ts",
   "exports": "./dist/cannon-es-debugger-babylonjs.js",
