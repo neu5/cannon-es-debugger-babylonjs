@@ -87,7 +87,12 @@
         );
         light.intensity = 0.4;
 
-        const shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+        camera.maxZ = 100;
+
+        const shadowGenerator = new BABYLON.CascadedShadowGenerator(
+          1024,
+          light
+        );
 
         window.addEventListener("resize", onWindowResize);
 
