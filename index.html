@@ -177,7 +177,6 @@
         box.rotationQuaternion =
           box.rotationQuaternion || new BABYLON.Quaternion();
         shadowGenerator.addShadowCaster(box, true);
-        box.receiveShadow = true;
         meshes.push(box);
 
         return body;
@@ -205,7 +204,6 @@
         sphere.rotationQuaternion =
           sphere.rotationQuaternion || new BABYLON.Quaternion();
         shadowGenerator.addShadowCaster(sphere, true);
-        sphere.receiveShadow = true;
         meshes.push(sphere);
 
         return body;
@@ -269,7 +267,6 @@
           cylinder.rotationQuaternion || new BABYLON.Quaternion();
         shadowGenerator.addShadowCaster(cylinder, true);
 
-        cylinder.receiveShadows = true;
         meshes.push(cylinder);
 
         return { body, cylinder, shape };
