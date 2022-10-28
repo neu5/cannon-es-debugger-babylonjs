@@ -199,7 +199,7 @@
         bodies.push(body);
 
         // Graphics
-        const sphere = BABYLON.MeshBuilder.CreateSphere(name, { radius });
+        const sphere = BABYLON.MeshBuilder.CreateSphere(name);
         sphere.scalingDeterminant = radius * 2;
         sphere.rotationQuaternion =
           sphere.rotationQuaternion || new BABYLON.Quaternion();
