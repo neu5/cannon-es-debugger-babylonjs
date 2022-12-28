@@ -10,6 +10,8 @@ import {
   Quaternion,
   StandardMaterial,
   Vector3,
+  Mesh as BabylonMesh,
+  VertexData
 } from "@babylonjs/core";
 import type {
   Box,
@@ -18,6 +20,7 @@ import type {
   Sphere,
   World,
 } from "cannon-es";
+import { Trimesh } from 'shapes/Trimesh'
 
 export type DebugOptions = {
   color?: { r: number; g: number; b: number };
@@ -44,13 +47,16 @@ export default function CannonDebugger(
   const material = new StandardMaterial("myMaterial", scene);
   material.diffuseColor = new Color3(color.r, color.g, color.b);
   material.wireframe = true;
+  const trimeshMaterial = new StandardMaterial("trimeshMaterial", scene);
+  trimeshMaterial.emissiveColor = new Color3(color.r, color.g, color.b);
+  trimeshMaterial.wireframe = true;
   const tempVec0 = new CannonVector3();
   const tempQuat0 = new CannonQuaternion();
   let meshCounter: number = 0;
 
   function createMesh(shape: Shape): Mesh | undefined {
     let mesh;
-    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER, TRIMESH } = Shape.types;
 
     switch (shape.type) {
       case BOX: {
@@ -101,20 +107,34 @@ export default function CannonDebugger(
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
       }
+      case TRIMESH:
+      {
+        mesh = new BabylonMesh(getMeshName("trimesh", meshCounter), scene)
+
+        const vertexData = new VertexData()
+        const { indices, vertices } = shape as Trimesh
+        vertexData.positions = vertices
+        vertexData.indices = indices as unknown as Uint16Array
+        vertexData.applyToMesh(mesh)
+        meshCounter = meshCounter + 1;
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+
+        break;
+      }
     }
 
     if (!mesh) {
       return;
     }
 
-    mesh.material = material;
+    mesh.material = shape.type === TRIMESH ? trimeshMaterial : material;
     scene.addMesh(mesh);
 
     return mesh;
   }
 
   function scaleMesh(mesh: Mesh, shape: Shape): void {
-    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER, TRIMESH } = Shape.types;
 
     switch (shape.type) {
       case BOX: {
@@ -138,6 +158,11 @@ export default function CannonDebugger(
         mesh.scalingDeterminant = radius * scale * 2;
         break;
       }
+      case TRIMESH:
+        mesh.scaling.x = scale;
+        mesh.scaling.y = scale;
+        mesh.scaling.z = scale;
+        break;
     }
   }
 
@@ -150,7 +175,8 @@ export default function CannonDebugger(
       shape.type === Shape.types.SPHERE ||
       shape.type === Shape.types.PLANE ||
       shape.type === Shape.types.BOX ||
-      shape.type === Shape.types.CYLINDER
+      shape.type === Shape.types.CYLINDER ||
+      shape.type === Shape.types.TRIMESH
     );
   }
 
