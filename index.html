@@ -69,7 +69,7 @@
         scene.useRightHandedSystem = true;
         const camera = new BABYLON.ArcRotateCamera(
           "camera",
-          -Math.PI / 2,
+          Math.PI / 2,
           Math.PI / 2.5,
           15,
           new BABYLON.Vector3(0, 0, 0)
@@ -300,14 +300,14 @@
 
             case "a":
             case "ArrowLeft":
-              vehicle.setSteeringValue(maxSteerVal, 0);
-              vehicle.setSteeringValue(maxSteerVal, 1);
+              vehicle.setSteeringValue(-maxSteerVal, 0);
+              vehicle.setSteeringValue(-maxSteerVal, 1);
               break;
 
             case "d":
             case "ArrowRight":
-              vehicle.setSteeringValue(-maxSteerVal, 0);
-              vehicle.setSteeringValue(-maxSteerVal, 1);
+              vehicle.setSteeringValue(maxSteerVal, 0);
+              vehicle.setSteeringValue(maxSteerVal, 1);
               break;
           }
         });
@@ -363,14 +363,14 @@
 
             case "a":
             case "ArrowLeft":
-              vehicle.setSteeringValue(maxSteerVal, 0);
-              vehicle.setSteeringValue(maxSteerVal, 1);
+              vehicle.setSteeringValue(-maxSteerVal, 0);
+              vehicle.setSteeringValue(-maxSteerVal, 1);
               break;
 
             case "d":
             case "ArrowRight":
-              vehicle.setSteeringValue(-maxSteerVal, 0);
-              vehicle.setSteeringValue(-maxSteerVal, 1);
+              vehicle.setSteeringValue(maxSteerVal, 0);
+              vehicle.setSteeringValue(maxSteerVal, 1);
               break;
 
             case "b":
@@ -740,30 +740,30 @@
       addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
 
       function updateMeshPositions() {
-        // if (raycastVehicle) {
-        //   for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
-        //     raycastVehicle.updateWheelTransform(i);
-        //     const { position, quaternion } =
-        //             raycastVehicle.wheelInfos[i].worldTransform;
-        //     const wheelBody = raycastVehicle.wheelBodies[i];
-        //     const wheelMesh = raycastVehicle.wheelMeshes[i];
-        //
-        //     wheelBody.position.set(position.x, position.y, position.z);
-        //     wheelBody.quaternion.set(
-        //             quaternion.x,
-        //             quaternion.y,
-        //             quaternion.z,
-        //             quaternion.w
-        //     );
-        //     wheelMesh.position.set(position.x, position.y, position.z);
-        //     wheelMesh.quaternion.set(
-        //             quaternion.x,
-        //             quaternion.y,
-        //             quaternion.z,
-        //             quaternion.w
-        //     );
-        //   }
-        // }
+        if (raycastVehicle) {
+          for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
+            raycastVehicle.updateWheelTransform(i);
+            const { position, quaternion } =
+                    raycastVehicle.wheelInfos[i].worldTransform;
+            const wheelBody = raycastVehicle.wheelBodies[i];
+            const wheelMesh = raycastVehicle.wheelMeshes[i];
+
+            wheelBody.position.set(position.x, position.y, position.z);
+            wheelBody.quaternion.set(
+                    quaternion.x,
+                    quaternion.y,
+                    quaternion.z,
+                    quaternion.w
+            );
+            wheelMesh.position.set(position.x, position.y, position.z);
+            wheelMesh.quaternion.set(
+                    quaternion.x,
+                    quaternion.y,
+                    quaternion.z,
+                    quaternion.w
+            );
+          }
+        }
 
         let meshIndex = 0;
         for (const body of world.bodies) {
