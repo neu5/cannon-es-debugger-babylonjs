@@ -3,16 +3,18 @@ import {
   Vec3 as CannonVector3,
   Shape,
 } from "cannon-es";
-import type { Mesh, Scene } from "@babylonjs/core";
+import type { FloatArray, Scene } from "@babylonjs/core";
 import {
   Color3,
+  Mesh,
   MeshBuilder,
   Quaternion,
   StandardMaterial,
   Vector3,
-  Mesh as BabylonMesh,
-  VertexData
+  VertexBuffer,
+  VertexData,
 } from "@babylonjs/core";
+
 import type {
   Box,
   Body as CannonBody,
@@ -20,7 +22,8 @@ import type {
   Sphere,
   World,
 } from "cannon-es";
-import { Trimesh } from 'shapes/Trimesh'
+
+import type { Trimesh } from 'shapes/Trimesh';
 
 export type DebugOptions = {
   color?: { r: number; g: number; b: number };
@@ -47,9 +50,6 @@ export default function CannonDebugger(
   const material = new StandardMaterial("myMaterial", scene);
   material.diffuseColor = new Color3(color.r, color.g, color.b);
   material.wireframe = true;
-  const trimeshMaterial = new StandardMaterial("trimeshMaterial", scene);
-  trimeshMaterial.emissiveColor = new Color3(color.r, color.g, color.b);
-  trimeshMaterial.wireframe = true;
   const tempVec0 = new CannonVector3();
   const tempQuat0 = new CannonQuaternion();
   let meshCounter: number = 0;
@@ -109,13 +109,17 @@ export default function CannonDebugger(
       }
       case TRIMESH:
       {
-        mesh = new BabylonMesh(getMeshName("trimesh", meshCounter), scene)
+        mesh = new Mesh(getMeshName("trimesh", meshCounter), scene);
 
-        const vertexData = new VertexData()
-        const { indices, vertices } = shape as Trimesh
-        vertexData.positions = vertices
-        vertexData.indices = indices as unknown as Uint16Array
-        vertexData.applyToMesh(mesh)
+        const vertexData = new VertexData();
+        const { indices, vertices } = shape as Trimesh;
+        const normals: FloatArray = [];
+
+        vertexData.positions = vertices;
+        vertexData.indices = indices as unknown as Uint16Array;
+        VertexData.ComputeNormals(vertices, mesh.getIndices(), normals, { useRightHandedSystem: true });
+        mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        vertexData.applyToMesh(mesh);
         meshCounter = meshCounter + 1;
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
 
@@ -127,7 +131,7 @@ export default function CannonDebugger(
       return;
     }
 
-    mesh.material = shape.type === TRIMESH ? trimeshMaterial : material;
+    mesh.material = material;
     scene.addMesh(mesh);
 
     return mesh;

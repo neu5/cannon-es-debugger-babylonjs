@@ -34,6 +34,7 @@
       }
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
   </head>
   <body>
     <div class="page-title">
@@ -65,7 +66,7 @@
       // ============
       async function initBabylonJS() {
         const scene = new BABYLON.Scene(engine);
-
+        scene.useRightHandedSystem = true;
         const camera = new BABYLON.ArcRotateCamera(
           "camera",
           -Math.PI / 2,
@@ -418,6 +419,36 @@
         });
       }
 
+      function addCustomMesh({ mass, position}) {
+        meshCounter = meshCounter + 1;
+
+        const suzanne = scene.getMeshByName('Suzanne')
+        const suzanne2 = suzanne.clone("suzanne");
+        const standardMaterial = new BABYLON.StandardMaterial("standard");
+
+        suzanne2.setParent(null);
+        suzanne2.setEnabled(true);
+
+        suzanne2.material = standardMaterial;
+        suzanne2.position.set(position.x, position.y, position.z);
+        shadowGenerator.addShadowCaster(suzanne2, true);
+
+        // physics
+        const shape = createTrimesh(suzanne2);
+        const body = new CANNON.Body({ mass, shape, position });
+
+        world.addBody(body);
+        bodies.push(body);
+        meshes.push(suzanne2);
+      }
+
+      function createTrimesh(mesh) {
+        const vertices = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        const indices = mesh.getIndices();
+
+        return new CANNON.Trimesh(vertices, indices)
+      }
+
       // function addTrimesh() {
       //   const radius = 1
       //   const tube = 0.3
@@ -655,6 +686,24 @@
       const world = initCannon();
       const cannonDebugger = initCannonDebugger();
 
+      // 3d model loading manager
+      const assetsManager = new BABYLON.AssetsManager(scene)
+      const path = 'public/scenes/'
+      const name = 'suzanne.glb'
+      const meshTask = assetsManager.addMeshTask('load task', '', path, name);
+
+      meshTask.onSuccess = (task) => {
+        task.loadedMeshes.forEach((mesh) => {
+          mesh.setEnabled(false)
+        })
+        addCustomMesh({ mass: 1, position: { x: -3, y: 5, z: 3 } });
+      }
+
+      assetsManager.onFinish = () => {
+
+      }
+
+      assetsManager.load()
       addPlane();
       addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
 
@@ -691,30 +740,30 @@
       addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
 
       function updateMeshPositions() {
-        if (raycastVehicle) {
-          for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
-            raycastVehicle.updateWheelTransform(i);
-            const { position, quaternion } =
-              raycastVehicle.wheelInfos[i].worldTransform;
-            const wheelBody = raycastVehicle.wheelBodies[i];
-            const wheelMesh = raycastVehicle.wheelMeshes[i];
-
-            wheelBody.position.set(position.x, position.y, position.z);
-            wheelBody.quaternion.set(
-              quaternion.x,
-              quaternion.y,
-              quaternion.z,
-              quaternion.w
-            );
-            wheelMesh.position.set(position.x, position.y, position.z);
-            wheelMesh.quaternion.set(
-              quaternion.x,
-              quaternion.y,
-              quaternion.z,
-              quaternion.w
-            );
-          }
-        }
+        // if (raycastVehicle) {
+        //   for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
+        //     raycastVehicle.updateWheelTransform(i);
+        //     const { position, quaternion } =
+        //             raycastVehicle.wheelInfos[i].worldTransform;
+        //     const wheelBody = raycastVehicle.wheelBodies[i];
+        //     const wheelMesh = raycastVehicle.wheelMeshes[i];
+        //
+        //     wheelBody.position.set(position.x, position.y, position.z);
+        //     wheelBody.quaternion.set(
+        //             quaternion.x,
+        //             quaternion.y,
+        //             quaternion.z,
+        //             quaternion.w
+        //     );
+        //     wheelMesh.position.set(position.x, position.y, position.z);
+        //     wheelMesh.quaternion.set(
+        //             quaternion.x,
+        //             quaternion.y,
+        //             quaternion.z,
+        //             quaternion.w
+        //     );
+        //   }
+        // }
 
         let meshIndex = 0;
         for (const body of world.bodies) {
