@@ -273,6 +273,29 @@
         return { body, cylinder, shape };
       }
 
+      function addCustomMesh({ mass, position}) {
+        meshCounter = meshCounter + 1;
+
+        const suzanne = scene.getMeshByName('Suzanne')
+        const suzanne2 = suzanne.clone("suzanne");
+        const standardMaterial = new BABYLON.StandardMaterial("standard");
+
+        suzanne2.setParent(null);
+        suzanne2.setEnabled(true);
+
+        suzanne2.material = standardMaterial;
+        suzanne2.position.set(position.x, position.y, position.z);
+        shadowGenerator.addShadowCaster(suzanne2, true);
+
+        // physics
+        const shape = createTrimesh(suzanne2);
+        const body = new CANNON.Body({ mass, shape, position });
+
+        world.addBody(body);
+        bodies.push(body);
+        meshes.push(suzanne2);
+      }
+
       function addWheel(options) {
         return addCylinder({
           isWheel: true,
@@ -417,29 +440,6 @@
               break;
           }
         });
-      }
-
-      function addCustomMesh({ mass, position}) {
-        meshCounter = meshCounter + 1;
-
-        const suzanne = scene.getMeshByName('Suzanne')
-        const suzanne2 = suzanne.clone("suzanne");
-        const standardMaterial = new BABYLON.StandardMaterial("standard");
-
-        suzanne2.setParent(null);
-        suzanne2.setEnabled(true);
-
-        suzanne2.material = standardMaterial;
-        suzanne2.position.set(position.x, position.y, position.z);
-        shadowGenerator.addShadowCaster(suzanne2, true);
-
-        // physics
-        const shape = createTrimesh(suzanne2);
-        const body = new CANNON.Body({ mass, shape, position });
-
-        world.addBody(body);
-        bodies.push(body);
-        meshes.push(suzanne2);
       }
 
       function createTrimesh(mesh) {
@@ -697,10 +697,6 @@
           mesh.setEnabled(false)
         })
         addCustomMesh({ mass: 1, position: { x: -3, y: 5, z: 3 } });
-      }
-
-      assetsManager.onFinish = () => {
-
       }
 
       assetsManager.load()

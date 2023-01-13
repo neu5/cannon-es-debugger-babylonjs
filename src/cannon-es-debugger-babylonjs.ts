@@ -21,9 +21,8 @@ import type {
   Cylinder,
   Sphere,
   World,
+  Trimesh
 } from "cannon-es";
-
-import type { Trimesh } from 'shapes/Trimesh';
 
 export type DebugOptions = {
   color?: { r: number; g: number; b: number };
