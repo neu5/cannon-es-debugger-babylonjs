@@ -106,8 +106,7 @@ export default function CannonDebugger(
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
       }
-      case TRIMESH:
-      {
+      case TRIMESH: {
         mesh = new Mesh(getMeshName("trimesh", meshCounter), scene);
 
         const vertexData = new VertexData();
@@ -116,7 +115,9 @@ export default function CannonDebugger(
 
         vertexData.positions = vertices;
         vertexData.indices = indices as unknown as Uint16Array;
-        VertexData.ComputeNormals(vertices, mesh.getIndices(), normals, { useRightHandedSystem: true });
+        VertexData.ComputeNormals(vertices, mesh.getIndices(), normals, {
+          useRightHandedSystem: true,
+        });
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
         vertexData.applyToMesh(mesh);
         meshCounter = meshCounter + 1;

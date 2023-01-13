@@ -32,7 +32,8 @@ function CannonDebugger(scene, world, _temp) {
       SPHERE,
       BOX,
       PLANE,
-      CYLINDER
+      CYLINDER,
+      TRIMESH
     } = cannonEs.Shape.types;
 
     switch (shape.type) {
@@ -83,6 +84,27 @@ function CannonDebugger(scene, world, _temp) {
           mesh.rotationQuaternion = mesh.rotationQuaternion || new core.Quaternion();
           break;
         }
+
+      case TRIMESH:
+        {
+          mesh = new core.Mesh(getMeshName("trimesh", meshCounter), scene);
+          const vertexData = new core.VertexData();
+          const {
+            indices,
+            vertices
+          } = shape;
+          const normals = [];
+          vertexData.positions = vertices;
+          vertexData.indices = indices;
+          core.VertexData.ComputeNormals(vertices, mesh.getIndices(), normals, {
+            useRightHandedSystem: true
+          });
+          mesh.setVerticesData(core.VertexBuffer.NormalKind, normals);
+          vertexData.applyToMesh(mesh);
+          meshCounter = meshCounter + 1;
+          mesh.rotationQuaternion = mesh.rotationQuaternion || new core.Quaternion();
+          break;
+        }
     }
 
     if (!mesh) {
@@ -99,7 +121,8 @@ function CannonDebugger(scene, world, _temp) {
       SPHERE,
       BOX,
       PLANE,
-      CYLINDER
+      CYLINDER,
+      TRIMESH
     } = cannonEs.Shape.types;
 
     switch (shape.type) {
@@ -131,6 +154,12 @@ function CannonDebugger(scene, world, _temp) {
           mesh.scalingDeterminant = radius * scale * 2;
           break;
         }
+
+      case TRIMESH:
+        mesh.scaling.x = scale;
+        mesh.scaling.y = scale;
+        mesh.scaling.z = scale;
+        break;
     }
   }
 
@@ -139,7 +168,7 @@ function CannonDebugger(scene, world, _temp) {
       return false;
     }
 
-    return shape.type === cannonEs.Shape.types.SPHERE || shape.type === cannonEs.Shape.types.PLANE || shape.type === cannonEs.Shape.types.BOX || shape.type === cannonEs.Shape.types.CYLINDER;
+    return shape.type === cannonEs.Shape.types.SPHERE || shape.type === cannonEs.Shape.types.PLANE || shape.type === cannonEs.Shape.types.BOX || shape.type === cannonEs.Shape.types.CYLINDER || shape.type === cannonEs.Shape.types.TRIMESH;
   }
 
   function updateMesh(index, shape) {

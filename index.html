@@ -273,10 +273,10 @@
         return { body, cylinder, shape };
       }
 
-      function addCustomMesh({ mass, position}) {
+      function addCustomMesh({ mass, position }) {
         meshCounter = meshCounter + 1;
 
-        const suzanne = scene.getMeshByName('Suzanne')
+        const suzanne = scene.getMeshByName("Suzanne");
         const suzanne2 = suzanne.clone("suzanne");
         const standardMaterial = new BABYLON.StandardMaterial("standard");
 
@@ -443,35 +443,13 @@
       }
 
       function createTrimesh(mesh) {
-        const vertices = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        const vertices = mesh.getVerticesData(
+          BABYLON.VertexBuffer.PositionKind
+        );
         const indices = mesh.getIndices();
 
-        return new CANNON.Trimesh(vertices, indices)
+        return new CANNON.Trimesh(vertices, indices);
       }
-
-      // function addTrimesh() {
-      //   const radius = 1
-      //   const tube = 0.3
-      //   const radialSegments = 16
-
-      //   // Physics
-      //   const body = new CANNON.Body({ mass })
-      //   const shape = CANNON.Trimesh.createTorus(radius, tube, radialSegments, 16)
-      //   body.addShape(shape)
-      //   body.position.set(-3, 2, -1)
-      //   body.quaternion.setFromEuler(Math.PI * 0.1, 0, 0)
-      //   world.addBody(body)
-      //   bodies.push(body)
-
-      //   // Graphics
-      //   const geometry = new THREE.TorusGeometry(radius, tube, radialSegments, 100)
-      //   const mesh = new THREE.Mesh(geometry, material)
-      //   // position and quaternion of the mesh are set by updateMeshPositions...
-      //   mesh.castShadow = true
-      //   mesh.receiveShadow = true
-      //   scene.add(mesh)
-      //   meshes.push(mesh)
-      // }
 
       // function addHeightfield() {
       //   const sizeX = 20 // number of vertices in the X axis
@@ -687,19 +665,19 @@
       const cannonDebugger = initCannonDebugger();
 
       // 3d model loading manager
-      const assetsManager = new BABYLON.AssetsManager(scene)
-      const path = 'public/scenes/'
-      const name = 'suzanne.glb'
-      const meshTask = assetsManager.addMeshTask('load task', '', path, name);
+      const assetsManager = new BABYLON.AssetsManager(scene);
+      const path = "public/scenes/";
+      const name = "suzanne.glb";
+      const meshTask = assetsManager.addMeshTask("load task", "", path, name);
 
       meshTask.onSuccess = (task) => {
         task.loadedMeshes.forEach((mesh) => {
-          mesh.setEnabled(false)
-        })
+          mesh.setEnabled(false);
+        });
         addCustomMesh({ mass: 1, position: { x: -3, y: 5, z: 3 } });
-      }
+      };
 
-      assetsManager.load()
+      assetsManager.load();
       addPlane();
       addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
 
@@ -740,23 +718,23 @@
           for (let i = 0; i < raycastVehicle.wheelInfos.length; i++) {
             raycastVehicle.updateWheelTransform(i);
             const { position, quaternion } =
-                    raycastVehicle.wheelInfos[i].worldTransform;
+              raycastVehicle.wheelInfos[i].worldTransform;
             const wheelBody = raycastVehicle.wheelBodies[i];
             const wheelMesh = raycastVehicle.wheelMeshes[i];
 
             wheelBody.position.set(position.x, position.y, position.z);
             wheelBody.quaternion.set(
-                    quaternion.x,
-                    quaternion.y,
-                    quaternion.z,
-                    quaternion.w
+              quaternion.x,
+              quaternion.y,
+              quaternion.z,
+              quaternion.w
             );
             wheelMesh.position.set(position.x, position.y, position.z);
             wheelMesh.quaternion.set(
-                    quaternion.x,
-                    quaternion.y,
-                    quaternion.z,
-                    quaternion.w
+              quaternion.x,
+              quaternion.y,
+              quaternion.z,
+              quaternion.w
             );
           }
         }
