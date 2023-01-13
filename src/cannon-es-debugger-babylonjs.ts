@@ -20,8 +20,8 @@ import type {
   Body as CannonBody,
   Cylinder,
   Sphere,
+  Trimesh,
   World,
-  Trimesh
 } from "cannon-es";
 
 export type DebugOptions = {
