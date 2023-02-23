@@ -34,6 +34,7 @@
       }
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
   </head>
   <body>
     <div class="page-title">
@@ -65,10 +66,10 @@
       // ============
       async function initBabylonJS() {
         const scene = new BABYLON.Scene(engine);
-
+        scene.useRightHandedSystem = true;
         const camera = new BABYLON.ArcRotateCamera(
           "camera",
-          -Math.PI / 2,
+          Math.PI / 2,
           Math.PI / 2.5,
           15,
           new BABYLON.Vector3(0, 0, 0)
@@ -272,6 +273,29 @@
         return { body, cylinder, shape };
       }
 
+      function addCustomMesh({ mass, position }) {
+        meshCounter = meshCounter + 1;
+
+        const suzanne = scene.getMeshByName("Suzanne");
+        const suzanne2 = suzanne.clone("suzanne");
+        const standardMaterial = new BABYLON.StandardMaterial("standard");
+
+        suzanne2.setParent(null);
+        suzanne2.setEnabled(true);
+
+        suzanne2.material = standardMaterial;
+        suzanne2.position.set(position.x, position.y, position.z);
+        shadowGenerator.addShadowCaster(suzanne2, true);
+
+        // physics
+        const shape = createTrimesh(suzanne2);
+        const body = new CANNON.Body({ mass, shape, position });
+
+        world.addBody(body);
+        bodies.push(body);
+        meshes.push(suzanne2);
+      }
+
       function addWheel(options) {
         return addCylinder({
           isWheel: true,
@@ -299,14 +323,14 @@
 
             case "a":
             case "ArrowLeft":
-              vehicle.setSteeringValue(maxSteerVal, 0);
-              vehicle.setSteeringValue(maxSteerVal, 1);
+              vehicle.setSteeringValue(-maxSteerVal, 0);
+              vehicle.setSteeringValue(-maxSteerVal, 1);
               break;
 
             case "d":
             case "ArrowRight":
-              vehicle.setSteeringValue(-maxSteerVal, 0);
-              vehicle.setSteeringValue(-maxSteerVal, 1);
+              vehicle.setSteeringValue(maxSteerVal, 0);
+              vehicle.setSteeringValue(maxSteerVal, 1);
               break;
           }
         });
@@ -362,14 +386,14 @@
 
             case "a":
             case "ArrowLeft":
-              vehicle.setSteeringValue(maxSteerVal, 0);
-              vehicle.setSteeringValue(maxSteerVal, 1);
+              vehicle.setSteeringValue(-maxSteerVal, 0);
+              vehicle.setSteeringValue(-maxSteerVal, 1);
               break;
 
             case "d":
             case "ArrowRight":
-              vehicle.setSteeringValue(-maxSteerVal, 0);
-              vehicle.setSteeringValue(-maxSteerVal, 1);
+              vehicle.setSteeringValue(maxSteerVal, 0);
+              vehicle.setSteeringValue(maxSteerVal, 1);
               break;
 
             case "b":
@@ -418,29 +442,14 @@
         });
       }
 
-      // function addTrimesh() {
-      //   const radius = 1
-      //   const tube = 0.3
-      //   const radialSegments = 16
+      function createTrimesh(mesh) {
+        const vertices = mesh.getVerticesData(
+          BABYLON.VertexBuffer.PositionKind
+        );
+        const indices = mesh.getIndices();
 
-      //   // Physics
-      //   const body = new CANNON.Body({ mass })
-      //   const shape = CANNON.Trimesh.createTorus(radius, tube, radialSegments, 16)
-      //   body.addShape(shape)
-      //   body.position.set(-3, 2, -1)
-      //   body.quaternion.setFromEuler(Math.PI * 0.1, 0, 0)
-      //   world.addBody(body)
-      //   bodies.push(body)
-
-      //   // Graphics
-      //   const geometry = new THREE.TorusGeometry(radius, tube, radialSegments, 100)
-      //   const mesh = new THREE.Mesh(geometry, material)
-      //   // position and quaternion of the mesh are set by updateMeshPositions...
-      //   mesh.castShadow = true
-      //   mesh.receiveShadow = true
-      //   scene.add(mesh)
-      //   meshes.push(mesh)
-      // }
+        return new CANNON.Trimesh(vertices, indices);
+      }
 
       // function addHeightfield() {
       //   const sizeX = 20 // number of vertices in the X axis
@@ -655,6 +664,20 @@
       const world = initCannon();
       const cannonDebugger = initCannonDebugger();
 
+      // 3d model loading manager
+      const assetsManager = new BABYLON.AssetsManager(scene);
+      const path = "public/scenes/";
+      const name = "suzanne.glb";
+      const meshTask = assetsManager.addMeshTask("load task", "", path, name);
+
+      meshTask.onSuccess = (task) => {
+        task.loadedMeshes.forEach((mesh) => {
+          mesh.setEnabled(false);
+        });
+        addCustomMesh({ mass: 1, position: { x: -3, y: 5, z: 3 } });
+      };
+
+      assetsManager.load();
       addPlane();
       addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
 

@@ -3,19 +3,24 @@ import {
   Vec3 as CannonVector3,
   Shape,
 } from "cannon-es";
-import type { Mesh, Scene } from "@babylonjs/core";
+import type { FloatArray, Scene } from "@babylonjs/core";
 import {
   Color3,
+  Mesh,
   MeshBuilder,
   Quaternion,
   StandardMaterial,
   Vector3,
+  VertexBuffer,
+  VertexData,
 } from "@babylonjs/core";
+
 import type {
   Box,
   Body as CannonBody,
   Cylinder,
   Sphere,
+  Trimesh,
   World,
 } from "cannon-es";
 
@@ -50,7 +55,7 @@ export default function CannonDebugger(
 
   function createMesh(shape: Shape): Mesh | undefined {
     let mesh;
-    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER, TRIMESH } = Shape.types;
 
     switch (shape.type) {
       case BOX: {
@@ -101,6 +106,25 @@ export default function CannonDebugger(
         mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
         break;
       }
+      case TRIMESH: {
+        mesh = new Mesh(getMeshName("trimesh", meshCounter), scene);
+
+        const vertexData = new VertexData();
+        const { indices, vertices } = shape as Trimesh;
+        const normals: FloatArray = [];
+
+        vertexData.positions = vertices;
+        vertexData.indices = indices as unknown as Uint16Array;
+        VertexData.ComputeNormals(vertices, mesh.getIndices(), normals, {
+          useRightHandedSystem: true,
+        });
+        mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        vertexData.applyToMesh(mesh);
+        meshCounter = meshCounter + 1;
+        mesh.rotationQuaternion = mesh.rotationQuaternion || new Quaternion();
+
+        break;
+      }
     }
 
     if (!mesh) {
@@ -114,7 +138,7 @@ export default function CannonDebugger(
   }
 
   function scaleMesh(mesh: Mesh, shape: Shape): void {
-    const { SPHERE, BOX, PLANE, CYLINDER } = Shape.types;
+    const { SPHERE, BOX, PLANE, CYLINDER, TRIMESH } = Shape.types;
 
     switch (shape.type) {
       case BOX: {
@@ -138,6 +162,11 @@ export default function CannonDebugger(
         mesh.scalingDeterminant = radius * scale * 2;
         break;
       }
+      case TRIMESH:
+        mesh.scaling.x = scale;
+        mesh.scaling.y = scale;
+        mesh.scaling.z = scale;
+        break;
     }
   }
 
@@ -150,7 +179,8 @@ export default function CannonDebugger(
       shape.type === Shape.types.SPHERE ||
       shape.type === Shape.types.PLANE ||
       shape.type === Shape.types.BOX ||
-      shape.type === Shape.types.CYLINDER
+      shape.type === Shape.types.CYLINDER ||
+      shape.type === Shape.types.TRIMESH
     );
   }
 
