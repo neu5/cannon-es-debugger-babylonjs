@@ -5,5 +5,6 @@ const FOLDER_SIZE_LIMIT = 50000;
 
 const size = await getFolderSize.strict(FOLDER_PATH);
 
-// size > FOLDER_SIZE_LIMIT ? console.log(-1) : console.log(0);
-throw new Error("Dist folder is too big!");
+if (size > FOLDER_SIZE_LIMIT) {
+  throw new Error("Dist folder is too big!");
+}
