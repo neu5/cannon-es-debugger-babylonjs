@@ -33,7 +33,7 @@
     "LICENSE.txt"
   ],
   "peerDependencies": {
-    "@babylonjs/core": "^5.24.0",
+    "@babylonjs/core": ">=5.24.0 < 7.0.0",
     "cannon-es": "^0.20.0"
   },
   "engines": {
@@ -45,7 +45,7 @@
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.16.5",
     "@babel/preset-typescript": "^7.16.5",
-    "@babylonjs/core": "^5.24.0",
+    "@babylonjs/core": "^6.0.0",
     "@rollup/plugin-babel": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
