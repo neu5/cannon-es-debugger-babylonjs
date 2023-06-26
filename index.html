@@ -41,6 +41,7 @@
       Press the <span>c</span> key to toggle the debugger
     </div>
     <canvas id="renderCanvas" touch-action="none"></canvas>
+    <canvas id="canvas2" touch-action="none"></canvas>
 
     <!-- Import maps polyfill -->
     <!-- Remove this when import maps will be widely supported -->
@@ -163,8 +164,9 @@
           depth * 0.5
         );
         const shape = new CANNON.Box(halfExtents);
+        const centerOfMassAdjust = new CANNON.Vec3(0, -1, 0);
         const body = new CANNON.Body({ mass });
-        body.addShape(shape);
+        body.addShape(shape, centerOfMassAdjust);
         body.position.set(position.x, position.y, position.z);
         world.addBody(body);
         bodies.push(body);
@@ -306,7 +308,7 @@
       function addRigidListeners(vehicle) {
         document.addEventListener("keydown", (event) => {
           const maxSteerVal = Math.PI / 8;
-          const maxForce = 10;
+          const maxForce = 50;
 
           switch (event.key) {
             case "w":
@@ -504,10 +506,10 @@
           height: 0.5,
           depth: 2,
         };
-        const carWheelSize = 0.5;
+        const carWheelSize = 0.8;
 
         const carBody = addBox({
-          mass: 5,
+          mass: 50,
           position,
           width: carChassisSize.width,
           height: carChassisSize.height,
@@ -536,12 +538,12 @@
           });
 
           wheelBody.angularDamping = 0.4;
-          const isFrontAxis = idx < 2 ? -1 : 1;
+          const isFrontAxis = idx < 2 ? -1.4 : 1.4;
           const yPos = idx % 2 === 0 ? 1 : -1;
 
           vehicle.addWheel({
             body: wheelBody,
-            position: new CANNON.Vec3(isFrontAxis, 0.3, (axisWidth * yPos) / 6),
+            position: new CANNON.Vec3(isFrontAxis, -1, (axisWidth * yPos) / 2),
             axis: new CANNON.Vec3(0, 0, isFrontAxis),
             direction: down,
           });
@@ -651,6 +653,7 @@
       const shapeWorldQuaternion = new CANNON.Quaternion();
 
       const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+      const canvas2 = document.getElementById("canvas2"); // Get the canvas element
       const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
       let meshCounter = 0;
@@ -679,7 +682,7 @@
 
       assetsManager.load();
       addPlane();
-      addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
+      // addSphere({ mass: 1, position: { x: -0.5, y: 4, z: -1 }, radius: 1 });
 
       let rigidVehicle, raycastVehicle;
 
@@ -691,17 +694,71 @@
         },
       });
 
+      const image = (source) =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.src = source;
+          img.onload = () => resolve(img);
+        });
+
+      const img = await image("public/heightMap2.png");
+
+      const ctx = canvas2.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const pd = ctx.getImageData(0, 0, 20, 20);
+      console.log(pd);
+
+      // heightfield
+      const sizeX = 20; // number of vertices in the X axis
+      const sizeY = 20; // number of vertices in the Y axis
+      const elementSize = 0.3; // cell width
+      const depth = 0.6;
+
+      // Physics
+      const body = new CANNON.Body({ mass: 0 });
+      const matrix = [];
+      for (let i = 0; i < sizeX; i++) {
+        matrix.push([]);
+        for (let j = 0; j < sizeY; j++) {
+          const height =
+            Math.cos((i / (sizeX - 1)) * Math.PI * 2) *
+            Math.cos((j / (sizeY - 1)) * Math.PI * 2) *
+            depth;
+          matrix[i].push(height);
+        }
+      }
+      console.log(matrix);
+      const shape = new CANNON.Heightfield(matrix, { elementSize });
+      body.addShape(
+        shape,
+        new CANNON.Vec3(
+          (-(sizeX - 1) / 2) * elementSize,
+          (-(sizeY - 1) / 2) * elementSize,
+          0
+        )
+      );
+      body.position.set(0, depth, -6);
+      body.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+      world.addBody(body);
+      bodies.push(body);
+
+      // const ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap(
+      //   "groundHeightmap",
+      //   "public/heightMap.png",
+      //   { width: 100, height: 100, subdivisions: 10, maxHeight: 10 }
+      // );
+
       // raycastVehicle = addRaycastVehicle({ position: { x: 8, y: 6, z: 0 } });
 
-      setTimeout(() => {
-        addBox({
-          width: 1,
-          height: 1,
-          depth: 1,
-          position: { x: 2, y: 3, z: 0.5 },
-          mass: 1,
-        });
-      }, 500);
+      // setTimeout(() => {
+      //   addBox({
+      //     width: 1,
+      //     height: 1,
+      //     depth: 1,
+      //     position: { x: 2, y: 3, z: 0.5 },
+      //     mass: 1,
+      //   });
+      // }, 500);
 
       if (rigidVehicle) {
         addRigidListeners(rigidVehicle);
@@ -711,7 +768,7 @@
         addRaycastListeners(raycastVehicle);
       }
 
-      addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
+      // addCylinder({ position: { x: -4, y: 2, z: -3.5 } });
 
       function updateMeshPositions() {
         if (raycastVehicle) {
